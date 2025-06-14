@@ -1,0 +1,41 @@
+.image-gallery {
+    padding: 20px;
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  
+  .image-gallery h1 {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  .loading {
+    font-size: 18px;
+    color: #555;
+  }
+  
+  .no-images {
+    font-size: 16px;
+    color: #999;
+  }
+  
+  .image-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 15px;
+    justify-items: center;
+  }
+  
+  .image-item img {
+    width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .image-item img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+  }
+  

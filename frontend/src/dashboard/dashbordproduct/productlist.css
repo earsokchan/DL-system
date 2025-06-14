@@ -1,0 +1,365 @@
+:root {
+  --primary-color: #e14eca;
+  --primary-hover-color: #d725bb;
+  --background-color: #27293d;
+  --input-background: #2b3553;
+  --text-color: rgba(255, 255, 255, 0.8);
+  --placeholder-color: rgba(255, 255, 255, 0.5);
+  --border-radius: 0.4285rem;
+  --transition-speed: 0.3s;
+  --card-background: #2b3553;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Base styles */
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Product List Container */
+.product-list {
+  padding: 80px 30px 30px 280px; /* Your requested padding */
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.product-list h2 {
+  color: var(--text-color);
+  margin-bottom: 20px;
+}
+
+.product-list select {
+  background-color: var(--input-background);
+  color: var(--text-color);
+  border: 1px solid transparent;
+  border-radius: var(--border-radius);
+  padding: 0.5rem 1rem;
+  margin-bottom: 20px;
+  transition: border-color var(--transition-speed) ease;
+}
+
+.product-list select:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+/* Product Grid */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+/* Product Card */
+.product-card {
+  background-color: var(--card-background);
+  border-radius: var(--border-radius);
+  padding: 15px;
+  box-shadow: var(--card-shadow);
+  transition: transform var(--transition-speed) ease;
+}
+
+.product-card:hover {
+  transform: translateY(-5px);
+}
+
+.product-card h3 {
+  margin: 10px 0;
+  font-size: 1.25rem;
+  color: var(--text-color);
+}
+
+.product-card p {
+  margin: 5px 0;
+  color: var(--text-color);
+}
+
+.product-card button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.5rem 1rem;
+  margin: 5px;
+  cursor: pointer;
+  transition: background-color var(--transition-speed) ease;
+}
+
+.product-card button:hover {
+  background-color: var(--primary-hover-color);
+}
+
+/* Carousel */
+.carousel {
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+.carousel-inner {
+  border-radius: var(--border-radius);
+}
+
+.carousel-item img {
+  border-radius: var(--border-radius);
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: var(--border-radius);
+  width: 40px;
+  height: 40px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  filter: invert(1);
+}
+
+/* Edit Form */
+.product-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  background: rgba(43, 53, 83, 0.98);
+  border-radius: var(--border-radius);
+  padding: 18px 18px 12px 18px;
+  box-shadow: 0 4px 24px 0 rgba(0,0,0,0.13);
+  border: 1.5px solid #23263b;
+}
+
+.product-card form input,
+.product-card form textarea {
+  background-color: var(--input-background);
+  color: var(--text-color);
+  border: 1.5px solid #23263b;
+  border-radius: var(--border-radius);
+  padding: 0.7rem 1rem;
+  font-size: 1rem;
+  margin-bottom: 0;
+  transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.07);
+  background: linear-gradient(90deg, #2b3553 80%, #23263b 100%);
+}
+
+.product-card form input:focus,
+.product-card form textarea:focus {
+  border-color: var(--primary-color);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(225, 78, 202, 0.15);
+  background-color: #23263b;
+  color: #fff;
+}
+
+.product-card form input::placeholder,
+.product-card form textarea::placeholder {
+  color: var(--placeholder-color);
+  opacity: 1;
+}
+
+.product-card form textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.product-card form button[type="submit"] {
+  background-color: var(--primary-color);
+  color: #fff;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.6rem 1.2rem;
+  margin-top: 8px;
+  margin-bottom: 0;
+  transition: background-color var(--transition-speed) ease;
+  box-shadow: 0 1px 4px 0 rgba(225, 78, 202, 0.08);
+  letter-spacing: 0.03em;
+}
+
+.product-card form button[type="submit"]:hover {
+  background-color: var(--primary-hover-color);
+}
+
+.product-card form button[type="button"] {
+  background-color: #6c757d;
+  color: #fff;
+  font-weight: 500;
+  border: none;
+  border-radius: var(--border-radius);
+  padding: 0.6rem 1.2rem;
+  margin-top: 0;
+  margin-bottom: 0;
+  transition: background-color var(--transition-speed) ease;
+  letter-spacing: 0.03em;
+}
+
+.product-card form button[type="button"]:hover {
+  background-color: #5a6268;
+}
+
+.product-card form input[type="file"] {
+  padding: 0.3rem 0.5rem;
+  background: none;
+  color: var(--text-color);
+}
+
+/* Image Modal */
+.image-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  max-width: 90%;
+  max-height: 90%;
+}
+
+.modal-content img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: var(--border-radius);
+}
+
+/* Success Message */
+.success-message {
+  background-color: #28a745;
+  color: #fff;
+  padding: 14px 24px;
+  border-radius: var(--border-radius);
+  margin-bottom: 18px;
+  font-size: 1.08rem;
+  font-weight: 600;
+  box-shadow: 0 2px 12px 0 rgba(40,167,69,0.13);
+  text-align: center;
+  animation: fadeInOut 2.5s;
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px);}
+  10% { opacity: 1; transform: translateY(0);}
+  90% { opacity: 1; transform: translateY(0);}
+  100% { opacity: 0; transform: translateY(-10px);}
+}
+
+/* Success Popup */
+.success-popup {
+  position: fixed;
+  top: 32px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #28a745;
+  color: #fff;
+  padding: 16px 32px;
+  border-radius: var(--border-radius);
+  font-size: 1.08rem;
+  font-weight: 600;
+  box-shadow: 0 4px 24px 0 rgba(40,167,69,0.18);
+  z-index: 2000;
+  animation: fadeInOutPopup 2.5s;
+  pointer-events: none;
+}
+
+@keyframes fadeInOutPopup {
+  0% { opacity: 0; transform: translate(-50%, -20px);}
+  10% { opacity: 1; transform: translate(-50%, 0);}
+  90% { opacity: 1; transform: translate(-50%, 0);}
+  100% { opacity: 0; transform: translate(-50%, -20px);}
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
+
+  .product-list {
+    padding: 10px;
+  }
+}
+
+.image-upload-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.image-upload-item {
+  width: calc(50% - 10px);
+}
+
+.image-preview-container {
+  position: relative;
+  height: 100px;
+  border: 1.5px solid #23263b;
+  border-radius: var(--border-radius);
+  background: #23263b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.image-preview {
+  max-width: 100%;
+  max-height: 100px;
+  object-fit: contain;
+  border-radius: var(--border-radius);
+  box-shadow: 0 1px 6px 0 rgba(225, 78, 202, 0.07);
+}
+
+.remove-image-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: var(--primary-color);
+  color: #fff;
+  font-weight: bold;
+  border: none;
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  font-size: 1rem;
+  box-shadow: 0 1px 4px 0 rgba(225, 78, 202, 0.13);
+  transition: background 0.2s;
+}
+
+.remove-image-btn:hover {
+  background: var(--primary-hover-color);
+}
+
+.file-upload-wrapper {
+  border: 2px dashed var(--primary-color);
+  background: rgba(225, 78, 202, 0.04);
+  padding: 18px 10px;
+  border-radius: var(--border-radius);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.file-upload-wrapper:hover,
+.file-upload-wrapper:focus-within {
+  border-color: var(--primary-hover-color);
+  background: rgba(225, 78, 202, 0.09);
+}
+
+.file-upload-wrapper label {
+  color: var(--primary-color);
+  font-weight: 500;
+  font-size: 0.98rem;
+  cursor: pointer;
+}

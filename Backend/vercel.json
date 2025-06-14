@@ -1,0 +1,16 @@
+{
+    "version": 2,
+    "name": "Target-Store-Api",
+    "builds": [
+        {
+            "src": "server.js",
+            "use": "@vercel/node"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "/server.js"
+        }
+    ]
+}

@@ -1,0 +1,264 @@
+.dashboard-container {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  padding: 60px 24px 24px 270px;
+  background: var(--background-color);
+;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 32px;
+}
+
+.header-title h1 {
+  margin: 0;
+  font-size: 2rem;
+  color: #f9faff;
+  font-weight: 700;
+}
+
+.header-title p {
+  margin: 6px 0 0;
+  color: #aefde3;
+  font-size: 1rem;
+}
+
+.header-profile {
+  display: flex;
+  align-items: center;
+  background: #000000;
+  padding: 8px 16px;
+  border-radius: 24px;
+  box-shadow: 0 2px 8px rgba(26, 35, 126, 0.06);
+}
+
+.profile-image {
+  border-radius: 50%;
+  margin-right: 12px;
+  width: 40px;
+  height: 40px;
+  border: 2px solid #1e88e5;
+}
+
+.kpi-section {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 28px;
+}
+
+.kpi-card {
+  background: #fff;
+  padding: 28px 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(30, 136, 229, 0.07);
+  flex: 1;
+  text-align: center;
+  transition: box-shadow 0.2s;
+}
+
+.kpi-card:hover {
+  box-shadow: 0 4px 20px rgba(30, 136, 229, 0.13);
+}
+
+.kpi-card h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1976d2;
+  font-weight: 600;
+}
+
+.kpi-card p {
+  margin: 12px 0 0;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #263238;
+}
+
+.charts-section {
+  background: #12b6c2;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(30, 136, 229, 0.07);
+  margin-bottom: 28px;
+}
+
+.chart-controls {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.chart-control {
+  padding: 10px 22px;
+  border: none;
+  border-radius: 6px;
+  background: #e3eafc;
+  color: #1976d2;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.chart-control.active,
+.chart-control:hover {
+  background: #1976d2;
+  color: #fff;
+}
+
+.chart-container {
+  height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #90a4ae;
+  font-size: 1.2rem;
+}
+
+.orders-section {
+  background: #2597da;
+  padding: 24px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(30, 136, 229, 0.07);
+}
+
+.orders-section h3 {
+  margin-top: 0;
+  color: #1a237e;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.orders-table th,
+.orders-table td {
+  padding: 12px 10px;
+  text-align: left;
+  border-bottom: 1px solid #e3eafc;
+}
+
+.orders-table th {
+  color: #1976d2;
+  font-weight: 600;
+  background: #f3f6fb;
+}
+
+.status {
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  display: inline-block;
+}
+
+.status.delivered {
+  background: #c8e6c9;
+  color: #388e3c;
+}
+
+.status.pending {
+  background: #fff9c4;
+  color: #fbc02d;
+}
+
+.status.shipped {
+  background: #bbdefb;
+  color: #1976d2;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-container {
+    padding: 60px 12px 12px 80px;
+  }
+  .kpi-section {
+    gap: 12px;
+  }
+  .charts-section,
+  .orders-section {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 60px 8px 8px 8px;
+  }
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .kpi-section {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .charts-section,
+  .orders-section {
+    padding: 12px;
+    margin-bottom: 18px;
+  }
+  .chart-container {
+    height: 200px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .header-title h1 {
+    font-size: 1.3rem;
+  }
+  .header-title p {
+    font-size: 0.95rem;
+  }
+  .header-profile {
+    padding: 6px 10px;
+    border-radius: 18px;
+  }
+  .profile-image {
+    width: 32px;
+    height: 32px;
+    margin-right: 8px;
+  }
+  .kpi-card {
+    padding: 16px 10px;
+    font-size: 0.95rem;
+  }
+  .kpi-card h3 {
+    font-size: 1rem;
+  }
+  .kpi-card p {
+    font-size: 1.3rem;
+  }
+  .charts-section,
+  .orders-section {
+    padding: 8px;
+    border-radius: 8px;
+  }
+  .orders-section h3 {
+    font-size: 1rem;
+  }
+  .orders-table th,
+  .orders-table td {
+    padding: 8px 4px;
+    font-size: 0.95rem;
+  }
+  .status {
+    padding: 4px 8px;
+    font-size: 0.85rem;
+  }
+}

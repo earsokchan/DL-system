@@ -1,0 +1,21 @@
+.image-slider-container {
+  padding: 60px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+
+
+.slider-controls button {
+  padding: 8px 16px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.slider-controls button:hover {
+  background-color: #45a049;
+}
+

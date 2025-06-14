@@ -1,0 +1,301 @@
+:root {
+  --primary: #6366f1;
+  --primary-dark: #4f46e5;
+  --background: #f8fafc;
+  --card-bg: #fff;
+  --input-bg: #f1f5f9;
+  --border: #e5e7eb;
+  --text: #22223b;
+  --label: #4b5563;
+  --shadow: 0 2px 8px 0 rgba(99, 102, 241, 0.06);
+  --radius: 10px;
+}
+
+body {
+  background: var(--background);
+  color: var(--text);
+  font-family: 'Segoe UI', Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 1.5rem 0.75rem;
+}
+
+form {
+  background: var(--card-bg);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem 1rem;
+  border: 1px solid var(--border);
+}
+
+h1, h2, h3 {
+  color: var(--primary-dark);
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+}
+
+label {
+  color: var(--label);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+  display: block;
+  font-size: 0.98rem;
+}
+
+input[type="text"],
+input[type="number"] {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  color: var(--text);
+  margin-top: 0.15rem;
+  margin-bottom: 0.5rem;
+  transition: border 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.10);
+}
+
+.mb-4 {
+  margin-bottom: 1.25rem !important;
+}
+.mb-6 {
+  margin-bottom: 1.75rem !important;
+}
+
+.p-4 {
+  padding: 1rem !important;
+}
+
+.rounded-md {
+  border-radius: 8px !important;
+}
+
+.shadow-sm {
+  box-shadow: 0 1px 4px 0 rgba(99, 102, 241, 0.05) !important;
+}
+
+.font-semibold {
+  font-weight: 600 !important;
+}
+.font-bold {
+  font-weight: 700 !important;
+}
+
+.text-lg {
+  font-size: 1.08rem !important;
+}
+.text-2xl {
+  font-size: 1.32rem !important;
+}
+.text-3xl {
+  font-size: 1.7rem !important;
+}
+
+.text-center {
+  text-align: center !important;
+}
+
+button {
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, box-shadow 0.18s, color 0.18s;
+  box-shadow: none;
+}
+
+button[type="submit"] {
+  background: linear-gradient(90deg, var(--primary) 60%, var(--primary-dark) 100%);
+  color: #fff;
+}
+
+button[type="submit"]:hover {
+  background: linear-gradient(90deg, var(--primary-dark) 60%, var(--primary) 100%);
+}
+
+button[type="button"] {
+  background: #fff;
+  color: var(--primary-dark);
+  border: 1px solid var(--border);
+}
+
+button[type="button"]:hover {
+  background: var(--input-bg);
+}
+
+.flex {
+  display: flex !important;
+}
+.justify-end {
+  justify-content: flex-end !important;
+}
+.space-x-4 > :not(:last-child) {
+  margin-right: 0.75rem !important;
+}
+
+.grid {
+  display: grid !important;
+}
+.grid-cols-2 {
+  grid-template-columns: 1fr 1fr !important;
+}
+.gap-4 {
+  gap: 0.75rem !important;
+}
+.mb-2 {
+  margin-bottom: 0.6rem !important;
+}
+
+.border {
+  border: 1px solid var(--border) !important;
+}
+
+/* Popup/modal overlay */
+.popup-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.25);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Popup/modal content */
+.popup-content {
+  background: #fff;
+  border-radius: 12px;
+  padding: 2rem 1.5rem;
+  min-width: 320px;
+  max-width: 95vw;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.13);
+  animation: popup-fade-in 0.18s;
+}
+
+@keyframes popup-fade-in {
+  from { opacity: 0; transform: translateY(30px);}
+  to { opacity: 1; transform: translateY(0);}
+}
+
+/* Button hover effect */
+button,
+.button {
+  transition: background 0.18s, box-shadow 0.18s, color 0.18s, border 0.18s;
+}
+
+button:active,
+.button:active {
+  transform: scale(0.98);
+}
+
+button[disabled],
+.button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Custom grid gap for popup inputs */
+.popup-content .grid {
+  gap: 1.1rem !important;
+}
+
+/* Custom close button for popup */
+.popup-close-btn {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--primary-dark);
+  cursor: pointer;
+  z-index: 10;
+}
+
+@media (max-width: 600px) {
+  .container {
+    padding: 0 0.5rem;
+  }
+  form {
+    padding: 1rem 0.5rem;
+  }
+  .grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+  .flex {
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+  .space-x-4 > :not(:last-child) {
+    margin-right: 0 !important;
+    margin-bottom: 0.5rem !important;
+  }
+  .popup-content {
+    padding: 1rem 0.5rem;
+    min-width: 0;
+  }
+}
+
+/* Subtle divider for popup sections */
+.divider {
+  border-bottom: 1px solid var(--border);
+  margin: 1.2rem 0;
+}
+
+/* Utility for visually hidden (for accessibility) */
+.visually-hidden {
+  position: absolute !important;
+  height: 1px; width: 1px;
+  overflow: hidden;
+  clip: rect(1px, 1px, 1px, 1px);
+  white-space: nowrap;
+}
+
+
+/* src/dashboard/hook/userDriver.css */
+
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.25);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-content {
+  background: #fff;
+  border-radius: 10px;
+  padding: 2rem;
+  min-width: 320px;
+  max-width: 95vw;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* If you need a specific margin for the popup heading that mb-2 doesn't cover,
+   uncomment and adjust this: */
+/*
+.popup-heading {
+  margin-bottom: 1rem;
+}
+*/
