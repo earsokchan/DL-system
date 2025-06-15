@@ -1,4 +1,5 @@
 // userDriverdisplay.jsx
+
 import React, { useState, useEffect } from 'react';
 import IceOrderForm from '../userDriver'; // Import the form component
 import html2canvas from 'html2canvas'; // Import html2canvas for capturing DOM
@@ -179,40 +180,40 @@ const Display = () => {
     };
 
     // **NEW FUNCTION**: Export report to PDF (with style fix)
-    const exportReportToPdf = async () => {
-        const input = document.getElementById('customer-table');
-        if (!input) {
-            alert('Cannot find the customer table to export.');
-            return;
-        }
+    // Removed exportReportToPdf and related code
+
+    // New function to save table totals to API
+    const saveTableTotalsToApi = async () => {
         try {
-            toggleExportStyle(true); // Apply white bg/black text
-            // Wait for style to apply
-            await new Promise((resolve) => setTimeout(resolve, 100));
-            const canvas = await html2canvas(input, { scale: 2, backgroundColor: "#fff" });
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF({
-                orientation: 'landscape',
-                unit: 'pt',
-                format: 'a4',
+            const currentTableTotals = calculateTableTotals(); // Recalculate to ensure latest values
+            const response = await fetch('http://localhost:5000/api/table-totals', { // **New API endpoint**
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(currentTableTotals),
             });
-            const pageWidth = pdf.internal.pageSize.getWidth();
-            const imgWidth = pageWidth - 40;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-            pdf.addImage(imgData, 'PNG', 20, 20, imgWidth, imgHeight);
-            pdf.save('customer-report.pdf');
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Failed to save table totals to API.');
+            }
+
+            console.log('Table totals saved successfully:', currentTableTotals);
+            alert('Table totals saved successfully!');
         } catch (err) {
-            console.error('Error exporting PDF:', err);
-            alert('Failed to export PDF.');
-        } finally {
-            toggleExportStyle(false); // Remove export style
+            console.error('Error saving table totals:', err);
+            setError(err.message || 'An unexpected error occurred while saving table totals.');
         }
     };
 
-    // Combined handler for Save Report and Export PDF
+    // Combined handler for Save Report (PDF export removed)
     const handleSaveAndExport = async () => {
+        // First, save the report data (customers data)
         await saveReportAndGeneratePdf();
-        await exportReportToPdf();
+        // Then, save the table totals
+        await saveTableTotalsToApi();
+        // PDF export removed
     };
 
     // Render ice type details for a customer
@@ -359,6 +360,75 @@ const Display = () => {
         return rows;
     };
 
+    // Calculate grand totals for all customers
+    const grandTotals = customers.reduce(
+        (acc, customer) => {
+            acc.totalIceQuantity += calculateTotalQuantity(customer.iceOrders);
+            acc.totalRevenue += calculateTotalRevenue(customer.iceOrders);
+            acc.totalDebt += customer.totalDebt !== undefined ? parseFloat(customer.totalDebt) || 0 : 0;
+            acc.totalNetIncome += (calculateTotalRevenue(customer.iceOrders) - (parseFloat(customer.expenses) || 0));
+            return acc;
+        },
+        { totalIceQuantity: 0, totalRevenue: 0, totalDebt: 0, totalNetIncome: 0 }
+    );
+
+    // Calculate column totals for the main table (for all customers and all ice types)
+    const calculateTableTotals = () => {
+        let totalIceQuantity = 0;
+        let totalQuantity = 0;
+        let totalPrice = 0; // Not meaningful to sum price, but will sum for completeness
+        let totalRevenue = 0;
+        let totalPrevDebt = 0;
+        let totalNewDebt = 0;
+        let totalPayment = 0;
+        let totalTotalDebt = 0;
+        let totalExpenses = 0;
+        let totalNetIncome = 0;
+
+        customers.forEach(customer => {
+            // For each ice type
+            const iceTypes = [
+                'originalIce',
+                'largeHygiene20kg',
+                'largeHygiene30kg',
+                'smallHygiene20kg',
+                'smallHygiene30kg'
+            ];
+            iceTypes.forEach(typeKey => {
+                const orders = customer.iceOrders?.[typeKey] || [];
+                orders.forEach(order => {
+                    totalIceQuantity += parseFloat(order.quantity) || 0;
+                    totalQuantity += parseFloat(order.quantity) || 0;
+                    totalPrice += parseFloat(order.price) || 0;
+                    totalRevenue += (parseFloat(order.quantity) || 0) * (parseFloat(order.price) || 0);
+                });
+            });
+            totalPrevDebt += reportDebts[customer.customerName] !== undefined
+                ? parseFloat(reportDebts[customer.customerName]) || 0
+                : (parseFloat(customer.previousDebt) || 0);
+            totalNewDebt += parseFloat(customer.newDebt) || 0;
+            totalPayment += parseFloat(customer.payment) || 0;
+            totalTotalDebt += customer.totalDebt !== undefined ? parseFloat(customer.totalDebt) || 0 : 0;
+            totalExpenses += parseFloat(customer.expenses) || 0;
+            totalNetIncome += (calculateTotalRevenue(customer.iceOrders) - (parseFloat(customer.expenses) || 0));
+        });
+
+        return {
+            totalIceQuantity,
+            totalQuantity,
+            totalPrice,
+            totalRevenue,
+            totalPrevDebt,
+            totalNewDebt,
+            totalPayment,
+            totalTotalDebt,
+            totalExpenses,
+            totalNetIncome
+        };
+    };
+
+    const tableTotals = calculateTableTotals();
+
     if (loading) {
         return (
             <div className="container">
@@ -380,6 +450,7 @@ const Display = () => {
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-3xl font-bold mb-6 text-center">តារាងអតិថិជន (Customer Table)</h1>
+            {/* --- Removed summary table here --- */}
             <div className="flex justify-end mb-4">
                 <button
                     className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
@@ -420,6 +491,21 @@ const Display = () => {
                         </thead>
                         <tbody>
                             {customers.map((customer) => renderIceTypeDetails(customer))}
+                            {/* --- Totals Row at the bottom of the main table --- */}
+                            <tr className="font-bold">
+                                <td className="border px-4 py-2 text-center" colSpan={3}>សរុប</td>
+                                <td className="border px-4 py-2">{tableTotals.totalIceQuantity}</td>
+                                <td className="border px-4 py-2">{tableTotals.totalQuantity}</td>
+                                <td className="border px-4 py-2">{tableTotals.totalPrice}</td>
+                                <td className="border px-4 py-2">{tableTotals.totalRevenue}</td>
+                                <td className="border px-4 py-2">{tableTotals.totalPrevDebt}</td>
+                                <td className="border px-4 py-2">{tableTotals.totalNewDebt}</td>
+                                <td className="border px-4 py-2">{tableTotals.totalPayment}</td>
+                                <td className="border px-4 py-2">{tableTotals.totalTotalDebt}</td>
+                                <td className="border px-4 py-2">{tableTotals.totalExpenses}</td>
+                                <td className="border px-4 py-2">{tableTotals.totalNetIncome}</td>
+                                <td className="border px-4 py-2"></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -462,7 +548,7 @@ const Display = () => {
             )}
             {/* Add this style at the end of the file (or in your global CSS if preferred) */}
             <style>
-            {`
+                {`
             .export-pdf-style {
                 background: #fff !important;
                 color: #000 !important;

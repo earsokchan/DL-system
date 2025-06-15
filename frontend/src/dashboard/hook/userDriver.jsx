@@ -92,14 +92,24 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
 
     const processedIceOrders = processIceOrderData(iceOrders);
 
+    let updatedNewDebt = Number(newDebt) || 0;
+    let updatedPayment = Number(payment) || 0;
+
+    // If editing, add the additional debt/payment amounts
+    if (initialData) {
+      if (addDebtAmount) {
+        updatedNewDebt += Number(addDebtAmount) || 0;
+      }
+      if (addPaymentAmount) {
+        updatedPayment += Number(addPaymentAmount) || 0;
+      }
+    }
+
     const orderData = {
       customerName,
       iceOrders: processedIceOrders,
-      // For new customers, these will be the directly entered values.
-      // For existing customers, these will be the 'current' values,
-      // which have already been updated by handleAddDebt/Payment.
-      newDebt: Number(newDebt) || 0,
-      payment: Number(payment) || 0,
+      newDebt: updatedNewDebt,
+      payment: updatedPayment,
       expenses: Number(expenses) || 0,
     };
 
@@ -121,104 +131,16 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
       }
 
       const data = await response.json();
-      console.log(`Customer data ${initialData ? 'updated' : 'saved'} successfully:`, data);
       setSuccess(true);
       if (initialData) {
         onUpdateSuccess(data);
+        setAddDebtAmount('');
+        setAddPaymentAmount('');
       } else {
-        clearForm(); // Clear the form after adding a new customer
+        clearForm();
       }
     } catch (err) {
-      console.error(`Error ${initialData ? 'updating' : 'saving'} customer data:`, err);
       setError(err.message || 'An unexpected error occurred.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle adding debt (only for existing customers)
-  const handleAddDebt = async () => {
-    if (!initialData) {
-      setError('Error: This function is only for adding to existing debt. For new customers, please input directly into "ប្រាក់ជំពាក់បច្ចុប្បន្ន".');
-      return;
-    }
-    const amount = Number(addDebtAmount);
-    if (isNaN(amount) || amount <= 0) {
-      setError('Please enter a valid positive number for new debt to add.');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setSuccess(false);
-
-    const url = `http://localhost:5000/api/orders/${initialData._id}/add-debt`; // New endpoint
-    try {
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ amount }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to add new debt.');
-      }
-
-      const data = await response.json();
-      setNewDebt(data.newDebt.toString()); // Update the displayed current new debt
-      setAddDebtAmount(''); // Clear the input field
-      setSuccess(true);
-      onUpdateSuccess(data); // Propagate the updated customer data
-    } catch (err) {
-      console.error('Error adding debt:', err);
-      setError(err.message || 'An unexpected error occurred while adding debt.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle adding payment (only for existing customers)
-  const handleAddPayment = async () => {
-    if (!initialData) {
-      setError('Error: This function is only for adding to existing payment. For new customers, please input directly into "ប្រាក់សងបច្ចុប្បន្ន".');
-      return;
-    }
-    const amount = Number(addPaymentAmount);
-    if (isNaN(amount) || amount <= 0) {
-      setError('Please enter a valid positive number for payment to add.');
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-    setSuccess(false);
-
-    const url = `http://localhost:5000/api/orders/${initialData._id}/add-payment`; // New endpoint
-    try {
-      const response = await fetch(url, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ amount }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to record payment.');
-      }
-
-      const data = await response.json();
-      setPayment(data.payment.toString()); // Update the displayed current payment
-      setAddPaymentAmount(''); // Clear the input field
-      setSuccess(true);
-      onUpdateSuccess(data); // Propagate the updated customer data
-    } catch (err) {
-      console.error('Error recording payment:', err);
-      setError(err.message || 'An unexpected error occurred while recording payment.');
     } finally {
       setLoading(false);
     }
@@ -403,10 +325,10 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
           <input
             type="number"
             id="newDebt"
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 ${initialData ? 'bg-gray-100 cursor-not-allowed' : 'focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50'}`}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             value={newDebt}
             onChange={(e) => setNewDebt(e.target.value)}
-            disabled={!!initialData && !addDebtAmount} // Disable direct input if it's an existing customer AND no "add" amount is being entered
+            disabled={false}
           />
         </div>
 
@@ -416,24 +338,14 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
             <label htmlFor="addDebtAmount" className="block text-sm font-medium text-gray-700 mb-2">
               បញ្ចូលប្រាក់ជំពាក់ថ្មីបន្ថែម (Add More New Debt)
             </label>
-            <div className="flex space-x-2">
-              <input
-                type="number"
-                id="addDebtAmount"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
-                value={addDebtAmount}
-                onChange={(e) => setAddDebtAmount(e.target.value)}
-                placeholder="Enter amount to add"
-              />
-              <button
-                type="button"
-                onClick={handleAddDebt}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-                disabled={loading}
-              >
-                បន្ថែម (Add)
-              </button>
-            </div>
+            <input
+              type="number"
+              id="addDebtAmount"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
+              value={addDebtAmount}
+              onChange={(e) => setAddDebtAmount(e.target.value)}
+              placeholder="Enter amount to add"
+            />
           </div>
         )}
 
@@ -445,10 +357,10 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
           <input
             type="number"
             id="payment"
-            className={`mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 ${initialData ? 'bg-gray-100 cursor-not-allowed' : 'focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50'}`}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             value={payment}
             onChange={(e) => setPayment(e.target.value)}
-            disabled={!!initialData && !addPaymentAmount} // Disable direct input if it's an existing customer AND no "add" amount is being entered
+            disabled={false}
           />
         </div>
 
@@ -458,24 +370,14 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
             <label htmlFor="addPaymentAmount" className="block text-sm font-medium text-gray-700 mb-2">
               បញ្ចូលប្រាក់សងបន្ថែម (Add More Payment)
             </label>
-            <div className="flex space-x-2">
-              <input
-                type="number"
-                id="addPaymentAmount"
-                className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
-                value={addPaymentAmount}
-                onChange={(e) => setAddPaymentAmount(e.target.value)}
-                placeholder="Enter amount to pay"
-              />
-              <button
-                type="button"
-                onClick={handleAddPayment}
-                className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                disabled={loading}
-              >
-                សង (Pay)
-              </button>
-            </div>
+            <input
+              type="number"
+              id="addPaymentAmount"
+              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
+              value={addPaymentAmount}
+              onChange={(e) => setAddPaymentAmount(e.target.value)}
+              placeholder="Enter amount to pay"
+            />
           </div>
         )}
 

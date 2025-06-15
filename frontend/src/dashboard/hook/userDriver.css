@@ -266,36 +266,3 @@ button[disabled],
   clip: rect(1px, 1px, 1px, 1px);
   white-space: nowrap;
 }
-
-
-/* src/dashboard/hook/userDriver.css */
-
-.popup-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.25);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.popup-content {
-  background: #fff;
-  border-radius: 10px;
-  padding: 2rem;
-  min-width: 320px;
-  max-width: 95vw;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
-}
-
-/* If you need a specific margin for the popup heading that mb-2 doesn't cover,
-   uncomment and adjust this: */
-/*
-.popup-heading {
-  margin-bottom: 1rem;
-}
-*/

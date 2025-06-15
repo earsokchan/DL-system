@@ -1,110 +1,5 @@
 
 
-
-// import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-// import Login from './login/Login';
-// import ProtectedRoute from './login/ProtectedRoute';
-// import Dashboardnavbar from './dashboard/dashboardnavbar.jsx';
-// import Dashboardmenu from './dashboard/dashboardmenu.jsx';
-// import Performance from './dashboard/hook/Performance.jsx';
-// import IceOrderForm from './dashboard/hook/userDriver.jsx';
-// import ProductList from './dashboard/dashbordproduct/ProductList.jsx';
-// import Stock from './dashboard/stock/stock.jsx';
-// import OrdersList from './dashboard/Order/addbanner.jsx';
-
-
-// import ImageSlider from './dashboard/Image/ImageSlider.jsx';
-
-// import Display from './dashboard/hook/display/userDriverdisplay.jsx';
-// // import ImageUpload from './dashboard/Image/image.jsx';
-// // import Shopimage from './dashboard/Image/shop.jsx';
-// // import Hoodieimage from './dashboard/Image/hoodieimage.jsx';
-// // import Teesimage from './dashboard/Image/teesimage.jsx';
-// // import Pantsimage from './dashboard/Image/pantsimage.jsx';
-// // import NotFound from './components/NotFound';
-
-// function App() {
-//   return (
-//     <Router>
-//       <Routes>
-//         {/* Public route - login page */}
-//         <Route path="/login" element={<Login />} />
-        
-//         {/* Protected dashboard routes */}
-//         <Route element={<ProtectedRoute />}>
-//           <Route path="/" element={
-//             <>
-//               <Dashboardnavbar />
-//               <Dashboardmenu />
-//               <Performance />
-//             </>
-//           } />
-          
-//           <Route path="/dashboard" element={
-//             <>
-//               <Dashboardnavbar />
-//               <Dashboardmenu />
-//               <Performance />
-//             </>
-//           } />
-          
-//           <Route path="/IceOrderForm" element={
-//             <>
-//               <Dashboardnavbar />
-//               <Dashboardmenu />
-//               <IceOrderForm />
-//               <Display />
-//             </>
-//           } />
-          
-//           <Route path="/addbanner" element={
-//             <>
-//               <Dashboardnavbar />
-//               <Dashboardmenu />
-//               <OrdersList />
-//             </>
-//           } />
-          
-//           <Route path="/stock" element={
-//             <>
-//               <Dashboardnavbar />
-//               <Dashboardmenu />
-//               <Stock />
-//             </>
-//           } />
-          
-//           <Route path="/image" element={
-//             <>
-//               <Dashboardnavbar />
-//               <Dashboardmenu />
-//               <ImageSlider />
-//               {/* <ImageUpload />
-//               <Shopimage />
-//               <Hoodieimage />
-//               <Teesimage />
-//               <Pantsimage /> */}
-//             </>
-//           } />
-//         </Route>
-        
-//         {/* Catch-all route */}
-//         {/* <Route path="*" element={<NotFound />} /> */}
-//       </Routes>
-//     </Router>
-//   );
-// }
-
-// // Component to conditionally render ProductList
-// function ConditionalProductList() {
-//   const location = useLocation();
-//   return location.pathname === "/addproduct" ? <ProductList /> : null;
-// }
-
-// export default App;
-
-
-
-
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Login from './login/Login';
 import ProtectedRoute from './login/ProtectedRoute';
@@ -128,7 +23,7 @@ function IceOrderPage() {
 
   return (
     <>
-      <Dashboardnavbar />
+      {/* <Dashboardnavbar /> */}
       <Dashboardmenu />
       <IceOrderForm onSubmit={handleAddCustomer} />
       <Display customers={customers} setCustomers={setCustomers} />
@@ -147,7 +42,7 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={
             <>
-              <Dashboardnavbar />
+              {/* <Dashboardnavbar /> */}
               <Dashboardmenu />
               <Performance />
             </>
@@ -155,7 +50,7 @@ function App() {
           
           <Route path="/dashboard" element={
             <>
-              <Dashboardnavbar />
+              {/* <Dashboardnavbar /> */}
               <Dashboardmenu />
               <Performance />
             </>
@@ -165,33 +60,33 @@ function App() {
           
           <Route path="/addbanner" element={
             <>
-              <Dashboardnavbar />
+              {/* <Dashboardnavbar /> */}
               <Dashboardmenu />
-              <OrdersList />
+              {/* <OrdersList /> */}
             </>
           } />
           
           <Route path="/stock" element={
             <>
-              <Dashboardnavbar />
+              {/* <Dashboardnavbar /> */}
               <Dashboardmenu />
-              <Stock />
+              {/* <Stock /> */}
             </>
           } />
           
           <Route path="/image" element={
             <>
-              <Dashboardnavbar />
+              {/* <Dashboardnavbar /> */}
               <Dashboardmenu />
-              <ImageSlider />
+              {/* <ImageSlider /> */}
             </>
           } />
           
           <Route path="/addproduct" element={
             <>
-              <Dashboardnavbar />
+              {/* <Dashboardnavbar /> */}
               <Dashboardmenu />
-              <ProductList />
+              {/* <ProductList /> */}
             </>
           } />
         </Route>
