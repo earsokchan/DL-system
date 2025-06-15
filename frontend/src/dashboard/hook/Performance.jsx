@@ -23,21 +23,23 @@ const Dashboard = () => {
   const [totalsList, setTotalsList] = useState([]);
   const [chartPeriod, setChartPeriod] = useState('Day');
   const [reportList, setReportList] = useState([]);
+  const [loading, setLoading] = useState(true); // Add loading state
 
   // Fetch all totals data
   useEffect(() => {
-    axios
-      .get('https://dl-api-v-01.vercel.app/api/table-totals')
-      .then((response) => setTotalsList(response.data))
-      .catch((error) => console.error('Error fetching totals:', error));
-  }, []);
-
-  // Fetch report list data
-  useEffect(() => {
-    axios
-      .get('https://dl-api-v-01.vercel.app/api/reports')
-      .then((response) => setReportList(response.data))
-      .catch((error) => console.error('Error fetching reports:', error));
+    setLoading(true);
+    Promise.all([
+      axios.get('https://dl-api-v-01.vercel.app/api/table-totals'),
+      axios.get('https://dl-api-v-01.vercel.app/api/reports')
+    ])
+      .then(([totalsRes, reportsRes]) => {
+        setTotalsList(totalsRes.data);
+        setReportList(reportsRes.data);
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+      })
+      .finally(() => setLoading(false));
   }, []);
 
   // Helper to filter data by period
@@ -290,22 +292,35 @@ const Dashboard = () => {
           ))}
         </div>
 
+        {/* Loading Spinner */}
+        {loading && (
+          <div className="container">
+            <div className="row">
+              <div className="col-md-12 d-flex justify-content-center align-items-center">
+                <div className="spinner-border text-dark" role="status">
+                  <span className="visually-hidden">Loading...</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Bar Chart for Day, Week, Month, Year for all KPIs */}
-        {barChartData && (
+        {!loading && barChartData && (
           <div className="bg-white p-6 rounded-lg shadow-md mb-8">
             <Bar data={barChartData} options={barChartOptions} />
           </div>
         )}
 
         {/* Date/Time Info */}
-        {totals && totals.date && (
+        {!loading && totals && totals.date && (
           <div className="mb-4 text-gray-700 font-medium">
             Date: {getFormattedDate(totals.date)}
           </div>
         )}
 
         {/* Dynamic KPI Cards */}
-        {totals && (
+        {!loading && totals && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {KPI_KEYS.map(key => (
               <div key={key} className="bg-white p-6 rounded-lg shadow-md">
@@ -319,14 +334,24 @@ const Dashboard = () => {
             ))}
           </div>
         )}
-        {!totals && (
+        {!loading && !totals && (
           <div className="text-gray-500 mb-8">No data for this period.</div>
         )}
 
         {/* Report List Section */}
         <div className="mb-8">
           <h2 className="text-xl font-semibold mb-2 text-gray-900">Customer Reports</h2>
-          {reportList.length === 0 ? (
+          {loading ? (
+            <div className="container">
+              <div className="row">
+                <div className="col-md-12 d-flex justify-content-center align-items-center">
+                  <div className="spinner-border text-dark" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : reportList.length === 0 ? (
             <div className="text-gray-500">No report data.</div>
           ) : (
             reportList.map(report => (

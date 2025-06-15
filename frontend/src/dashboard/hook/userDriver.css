@@ -1,7 +1,7 @@
 :root {
   --primary: #6366f1;
   --primary-dark: #4f46e5;
-  --background: #f8fafc;
+  --background: #fff; /* Changed from #f8fafc to #fff */
   --card-bg: #fff;
   --input-bg: #f1f5f9;
   --border: #e5e7eb;
@@ -26,7 +26,7 @@ body {
 }
 
 form {
-  background: var(--card-bg);
+  background: #ffffff; /* Ensure form bg is white */
   border-radius: var(--radius);
   box-shadow: var(--shadow);
   padding: 1.5rem 1rem;
@@ -179,7 +179,7 @@ button[type="button"]:hover {
 
 /* Popup/modal content */
 .popup-content {
-  background: #fff;
+  background: #fff; /* Ensure popup bg is white */
   border-radius: 12px;
   padding: 2rem 1.5rem;
   min-width: 320px;

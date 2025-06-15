@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './userDriver.css'; // Make sure this CSS file exists and contains the necessary styles
+import './userDriver.css';
 
 const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
   // State to manage form inputs
@@ -138,6 +138,8 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
         setAddPaymentAmount('');
       } else {
         clearForm();
+        // Reload page to show new data
+        window.location.reload();
       }
     } catch (err) {
       setError(err.message || 'An unexpected error occurred.');
@@ -166,24 +168,20 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
     setSuccess(false); // Clear success message
   };
 
+  // Popup close handler (click overlay or close button)
+  const handlePopupClose = () => setPopupIceType(null);
+
   // Helper function to render ice input rows (for popup)
   const renderIceInputs = (iceType, label, isPopup = false) => (
     <div className={isPopup ? "" : "mb-4 p-4 border rounded-md shadow-sm"}>
-      <h3
-        className={`font-semibold text-lg mb-2 ${isPopup ? 'popup-heading' : ''}`}
-      >
-        {label}
-      </h3>
+      <h3 className={`font-semibold text-lg mb-2`}>{label}</h3>
       {iceOrders[iceType].map((order, index) => (
         <div key={index} className="grid grid-cols-2 gap-4 mb-2">
           <div>
-            <label htmlFor={`${iceType}-quantity-${index}`} className="block text-sm font-medium text-gray-700">
-              ចំណួន (Quantity)
-            </label>
+            <label htmlFor={`${iceType}-quantity-${index}`}>ចំណួន (Quantity)</label>
             <input
               type="number"
               id={`${iceType}-quantity-${index}`}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
               value={order.quantity}
               onChange={(e) =>
                 handleIceOrderChange(iceType, index, 'quantity', e.target.value)
@@ -191,13 +189,10 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
             />
           </div>
           <div>
-            <label htmlFor={`${iceType}-price-${index}`} className="block text-sm font-medium text-gray-700">
-              តម្លៃ (Price)
-            </label>
+            <label htmlFor={`${iceType}-price-${index}`}>តម្លៃ (Price)</label>
             <input
               type="number"
               id={`${iceType}-price-${index}`}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
               value={order.price}
               onChange={(e) =>
                 handleIceOrderChange(iceType, index, 'price', e.target.value)
@@ -216,14 +211,12 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
                 [iceType]: Array(4).fill({ quantity: '', price: '' }),
               }));
             }}
-            className="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
           >
             Clear
           </button>
           <button
             type="button"
-            onClick={() => setPopupIceType(null)}
-            className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            onClick={handlePopupClose}
           >
             Close
           </button>
@@ -233,20 +226,17 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
   );
 
   return (
-    <div className="container mx-auto p-4">
+    <div className="container">
       <h1 className="text-3xl font-bold mb-6 text-center">
         {initialData ? 'កែសម្រួលព័ត៌មានអតិថិជន (Edit Customer Info)' : 'បន្ថែមអតិថិជនថ្មី (Add New Customer)'}
       </h1>
-      <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md">
+      <form onSubmit={handleSubmit}>
         {/* Customer Name */}
         <div className="mb-4">
-          <label htmlFor="customerName" className="block text-sm font-medium text-gray-700">
-            គោត្តនាម (Customer Name)
-          </label>
+          <label htmlFor="customerName">គោត្តនាម (Customer Name)</label>
           <input
             type="text"
             id="customerName"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
             value={customerName}
             onChange={(e) => setCustomerName(e.target.value)}
             required
@@ -256,40 +246,25 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
         {/* Ice Type Section */}
         <div className="mb-6">
           <h2 className="text-2xl font-semibold mb-4">ប្រភេទទឹកកក (Ice Type)</h2>
-          <div className="grid grid-cols-1 gap-2">
-            <button
-              type="button"
-              className="font-semibold text-left p-2 border rounded-md"
-              onClick={() => setPopupIceType('originalIce')}
-            >
+          <div className="grid gap-4">
+            <button type="button" className="font-semibold text-left border rounded-md p-4"
+              onClick={() => setPopupIceType('originalIce')}>
               ទឹកកកដើម (Original Ice)
             </button>
-            <button
-              type="button"
-              className="font-semibold text-left p-2 border rounded-md"
-              onClick={() => setPopupIceType('largeHygiene20kg')}
-            >
+            <button type="button" className="font-semibold text-left border rounded-md p-4"
+              onClick={() => setPopupIceType('largeHygiene20kg')}>
               ទឹកកកអនាម័យធំ (Large) 20kg
             </button>
-            <button
-              type="button"
-              className="font-semibold text-left p-2 border rounded-md"
-              onClick={() => setPopupIceType('largeHygiene30kg')}
-            >
+            <button type="button" className="font-semibold text-left border rounded-md p-4"
+              onClick={() => setPopupIceType('largeHygiene30kg')}>
               ទឹកកកអនាម័យធំ (Large) 30kg
             </button>
-            <button
-              type="button"
-              className="font-semibold text-left p-2 border rounded-md"
-              onClick={() => setPopupIceType('smallHygiene20kg')}
-            >
+            <button type="button" className="font-semibold text-left border rounded-md p-4"
+              onClick={() => setPopupIceType('smallHygiene20kg')}>
               ទឹកកកអនាម័យតូច (Small) 20kg
             </button>
-            <button
-              type="button"
-              className="font-semibold text-left p-2 border rounded-md"
-              onClick={() => setPopupIceType('smallHygiene30kg')}
-            >
+            <button type="button" className="font-semibold text-left border rounded-md p-4"
+              onClick={() => setPopupIceType('smallHygiene30kg')}>
               ទឹកកកអនាម័យតូច (Small) 30kg
             </button>
           </div>
@@ -297,8 +272,9 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
 
         {/* Popup for ice type input */}
         {popupIceType && (
-          <div className="popup-overlay">
-            <div className="popup-content">
+          <div className="popup-overlay" onClick={handlePopupClose}>
+            <div className="popup-content" onClick={e => e.stopPropagation()}>
+              <button className="popup-close-btn" type="button" onClick={handlePopupClose}>&times;</button>
               {renderIceInputs(
                 popupIceType,
                 {
@@ -319,29 +295,26 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
 
         {/* Current New Debt / Direct New Debt Input */}
         <div className="mb-4">
-          <label htmlFor="newDebt" className="block text-sm font-medium text-gray-700">
-            ប្រាក់ជំពាក់បច្ចុប្បន្ន (Current New Debt)
-          </label>
+          <label htmlFor="newDebt">ប្រាក់ជំពាក់បច្ចុប្បន្ន (Current New Debt)</label>
           <input
             type="number"
             id="newDebt"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             value={newDebt}
             onChange={(e) => setNewDebt(e.target.value)}
-            disabled={false}
+            disabled={!!initialData} // Disable input if editing
+            readOnly={!!initialData} // Prevent input if editing
           />
         </div>
 
         {/* Add New Debt Section (only for existing customers) */}
         {initialData && (
-          <div className="mb-4 p-4 border rounded-md shadow-sm bg-blue-50">
-            <label htmlFor="addDebtAmount" className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="mb-4 p-4 border rounded-md shadow-sm">
+            <label htmlFor="addDebtAmount" className="mb-2">
               បញ្ចូលប្រាក់ជំពាក់ថ្មីបន្ថែម (Add More New Debt)
             </label>
             <input
               type="number"
               id="addDebtAmount"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
               value={addDebtAmount}
               onChange={(e) => setAddDebtAmount(e.target.value)}
               placeholder="Enter amount to add"
@@ -351,29 +324,26 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
 
         {/* Current Payment / Direct Payment Input */}
         <div className="mb-4">
-          <label htmlFor="payment" className="block text-sm font-medium text-gray-700">
-            ប្រាក់សងបច្ចុប្បន្ន (Current Payment)
-          </label>
+          <label htmlFor="payment">ប្រាក់សងបច្ចុប្បន្ន (Current Payment)</label>
           <input
             type="number"
             id="payment"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm p-2 focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
             value={payment}
             onChange={(e) => setPayment(e.target.value)}
-            disabled={false}
+            disabled={!!initialData} // Disable input if editing
+            readOnly={!!initialData} // Prevent input if editing
           />
         </div>
 
         {/* Add Payment Section (only for existing customers) */}
         {initialData && (
-          <div className="mb-4 p-4 border rounded-md shadow-sm bg-yellow-50">
-            <label htmlFor="addPaymentAmount" className="block text-sm font-medium text-gray-700 mb-2">
+          <div className="mb-4 p-4 border rounded-md shadow-sm">
+            <label htmlFor="addPaymentAmount" className="mb-2">
               បញ្ចូលប្រាក់សងបន្ថែម (Add More Payment)
             </label>
             <input
               type="number"
               id="addPaymentAmount"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
               value={addPaymentAmount}
               onChange={(e) => setAddPaymentAmount(e.target.value)}
               placeholder="Enter amount to pay"
@@ -381,38 +351,33 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
           </div>
         )}
 
-        {/* Expenses (this input allows direct editing as before) */}
+        {/* Expenses */}
         <div className="mb-6">
-          <label htmlFor="expenses" className="block text-sm font-medium text-gray-700">
-            ថ្លៃសាំង បាយ (Expenses)
-          </label>
+          <label htmlFor="expenses">ថ្លៃសាំង បាយ (Expenses)</label>
           <input
             type="number"
             id="expenses"
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 p-2"
-            value={expenses} // Now bound to `expenses` state
+            value={expenses}
             onChange={(e) => setExpenses(e.target.value)}
           />
         </div>
 
         {/* Loading, Error, and Success Messages */}
-        {loading && <p className="text-blue-500 text-center mb-4">{initialData ? 'Updating data...' : 'Saving data...'}</p>}
-        {error && <p className="text-red-500 text-center mb-4">Error: {error}</p>}
-        {success && <p className="text-green-500 text-center mb-4">Customer data {initialData ? 'updated' : 'saved'} successfully!</p>}
+        {loading && <p className="text-center mb-4">{initialData ? 'Updating data...' : 'Saving data...'}</p>}
+        {error && <p className="text-center mb-4" style={{ color: 'red' }}>Error: {error}</p>}
+        {success && <p className="text-center mb-4" style={{ color: 'green' }}>Customer data {initialData ? 'updated' : 'saved'} successfully!</p>}
 
         {/* Action Buttons */}
         <div className="flex justify-end space-x-4">
           <button
             type="button"
             onClick={initialData ? onClose : clearForm}
-            className="px-6 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             disabled={loading}
           >
             {initialData ? 'Cancel' : 'Clear'}
           </button>
           <button
             type="submit"
-            className="px-6 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             disabled={loading}
           >
             {loading ? (initialData ? 'Updating...' : 'Saving...') : (initialData ? 'Update Customer' : 'Save Customer')}
