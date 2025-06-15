@@ -113,7 +113,7 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
       expenses: Number(expenses) || 0,
     };
 
-    const url = initialData ? `http://localhost:5000/api/orders/${initialData._id}` : 'http://localhost:5000/api/orders';
+    const url = initialData ? `https://dl-api-v-01.vercel.app/api/orders/${initialData._id}` : 'https://dl-api-v-01.vercel.app/api/orders';
     const method = initialData ? 'PUT' : 'POST';
 
     try {

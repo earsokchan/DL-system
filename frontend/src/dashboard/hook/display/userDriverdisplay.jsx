@@ -19,7 +19,7 @@ const Display = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch('http://localhost:5000/api/orders'); // Adjust URL if your backend is on a different port/domain
+            const response = await fetch('https://dl-api-v-01.vercel.app/api/orders'); // Adjust URL if your backend is on a different port/domain
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Failed to fetch customer data.');
@@ -37,7 +37,7 @@ const Display = () => {
     // Fetch latest report debts
     const fetchLatestReportDebts = async () => {
         try {
-            const res = await fetch('http://localhost:5000/api/reports');
+            const res = await fetch('https://dl-api-v-01.vercel.app/api/reports');
             if (!res.ok) return;
             const reports = await res.json();
             if (!Array.isArray(reports) || reports.length === 0) return;
@@ -98,7 +98,7 @@ const Display = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this customer record?')) {
             try {
-                const response = await fetch(`http://localhost:5000/api/orders/${id}`, { // Adjust URL
+                const response = await fetch(`https://dl-api-v-01.vercel.app/api/orders/${id}`, { // Adjust URL
                     method: 'DELETE',
                 });
 
@@ -146,7 +146,7 @@ const Display = () => {
                 customersData: customers
             };
 
-            const dbResponse = await fetch('http://localhost:5000/api/reports', {
+            const dbResponse = await fetch('https://dl-api-v-01.vercel.app/api/reports', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ const Display = () => {
     const saveTableTotalsToApi = async () => {
         try {
             const currentTableTotals = calculateTableTotals(); // Recalculate to ensure latest values
-            const response = await fetch('http://localhost:5000/api/table-totals', { // **New API endpoint**
+            const response = await fetch('https://dl-api-v-01.vercel.app/api/table-totals', { // **New API endpoint**
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

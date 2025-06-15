@@ -27,7 +27,7 @@ const Dashboard = () => {
   // Fetch all totals data
   useEffect(() => {
     axios
-      .get('http://localhost:5000/api/table-totals')
+      .get('https://dl-api-v-01.vercel.app/api/table-totals')
       .then((response) => setTotalsList(response.data))
       .catch((error) => console.error('Error fetching totals:', error));
   }, []);
@@ -35,7 +35,7 @@ const Dashboard = () => {
   // Fetch report list data
   useEffect(() => {
     axios
-      .get('http://localhost:5000/api/reports')
+      .get('https://dl-api-v-01.vercel.app/api/reports')
       .then((response) => setReportList(response.data))
       .catch((error) => console.error('Error fetching reports:', error));
   }, []);
