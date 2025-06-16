@@ -1,107 +1,95 @@
-import React, { useState, useEffect } from 'react';
-import './userDriver.css';
+"use client"
+
+import { useState, useEffect } from "react"
+import "./userDriver.css"
 
 const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
-  // State to manage form inputs
-  const [customerName, setCustomerName] = useState('');
+  const [customerName, setCustomerName] = useState("")
   const [iceOrders, setIceOrders] = useState({
-    originalIce: Array(4).fill({ quantity: '', price: '' }),
-    largeHygiene20kg: Array(4).fill({ quantity: '', price: '' }),
-    largeHygiene30kg: Array(4).fill({ quantity: '', price: '' }),
-    smallHygiene20kg: Array(4).fill({ quantity: '', price: '' }),
-    smallHygiene30kg: Array(4).fill({ quantity: '', price: '' }),
-  });
+    originalIce: Array(4).fill({ quantity: "", price: "" }),
+    largeHygiene20kg: Array(4).fill({ quantity: "", price: "" }),
+    largeHygiene30kg: Array(4).fill({ quantity: "", price: "" }),
+    smallHygiene20kg: Array(4).fill({ quantity: "", price: "" }),
+    smallHygiene30kg: Array(4).fill({ quantity: "", price: "" }),
+  })
 
-  // These states will now be directly editable for new users, and will display current values for existing.
-  const [newDebt, setNewDebt] = useState(''); // Renamed from currentNewDebt for clarity
-  const [payment, setPayment] = useState(''); // Renamed from currentPayment for clarity
-  const [expenses, setExpenses] = useState(''); // Renamed from currentExpenses for clarity
+  const [newDebt, setNewDebt] = useState("")
+  const [payment, setPayment] = useState("")
+  const [expenses, setExpenses] = useState("")
+  const [addDebtAmount, setAddDebtAmount] = useState("")
+  const [addPaymentAmount, setAddPaymentAmount] = useState("")
+  const [popupIceType, setPopupIceType] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(false)
 
-  // States for the amounts to be added/subtracted (only relevant for existing customers)
-  const [addDebtAmount, setAddDebtAmount] = useState('');
-  const [addPaymentAmount, setAddPaymentAmount] = useState('');
-
-  const [popupIceType, setPopupIceType] = useState(null); // Track which popup is open
-  const [loading, setLoading] = useState(false); // To show loading state
-  const [error, setError] = useState(null); // To handle errors
-  const [success, setSuccess] = useState(false); // To show success message
-
-  // Effect to pre-populate form when initialData is provided (for editing)
   useEffect(() => {
     if (initialData) {
-      setCustomerName(initialData.customerName || '');
+      setCustomerName(initialData.customerName || "")
 
-      const populatedIceOrders = {};
+      const populatedIceOrders = {}
       for (const type in initialData.iceOrders) {
-        const filteredOrders = initialData.iceOrders[type].filter(item => item.quantity !== 0 || item.price !== 0);
+        const filteredOrders = initialData.iceOrders[type].filter((item) => item.quantity !== 0 || item.price !== 0)
         populatedIceOrders[type] = [
-          ...filteredOrders.map(item => ({
-            quantity: item.quantity !== undefined ? item.quantity.toString() : '',
-            price: item.price !== undefined ? item.price.toString() : '',
+          ...filteredOrders.map((item) => ({
+            quantity: item.quantity !== undefined ? item.quantity.toString() : "",
+            price: item.price !== undefined ? item.price.toString() : "",
           })),
-          ...Array(Math.max(0, 4 - filteredOrders.length)).fill({ quantity: '', price: '' }),
-        ];
+          ...Array(Math.max(0, 4 - filteredOrders.length)).fill({ quantity: "", price: "" }),
+        ]
       }
-      setIceOrders(populatedIceOrders);
+      setIceOrders(populatedIceOrders)
 
-      // Set current values for display and potential updates
-      setNewDebt(initialData.newDebt !== undefined ? initialData.newDebt.toString() : '0');
-      setPayment(initialData.payment !== undefined ? initialData.payment.toString() : '0');
-      setExpenses(initialData.expenses !== undefined ? initialData.expenses.toString() : '0');
+      setNewDebt(initialData.newDebt !== undefined ? initialData.newDebt.toString() : "0")
+      setPayment(initialData.payment !== undefined ? initialData.payment.toString() : "0")
+      setExpenses(initialData.expenses !== undefined ? initialData.expenses.toString() : "0")
 
-      // Clear the "add" input fields when an existing customer is loaded for editing
-      setAddDebtAmount('');
-      setAddPaymentAmount('');
-
+      setAddDebtAmount("")
+      setAddPaymentAmount("")
     } else {
-      // Clear form for new entry
-      clearForm();
+      clearForm()
     }
-  }, [initialData]);
+  }, [initialData])
 
-  // Handle changes for ice order inputs
   const handleIceOrderChange = (iceType, index, field, value) => {
-    const updatedIceOrders = { ...iceOrders };
+    const updatedIceOrders = { ...iceOrders }
     updatedIceOrders[iceType][index] = {
       ...updatedIceOrders[iceType][index],
       [field]: value,
-    };
-    setIceOrders(updatedIceOrders);
-  };
+    }
+    setIceOrders(updatedIceOrders)
+  }
 
-  // Helper function to process ice order data before sending
   const processIceOrderData = (orders) => {
-    const processedOrders = {};
+    const processedOrders = {}
     for (const type in orders) {
       processedOrders[type] = orders[type]
-        .filter(item => item.quantity !== '' || item.price !== '')
-        .map(item => ({
-          quantity: item.quantity === '' ? 0 : Number(item.quantity),
-          price: item.price === '' ? 0 : Number(item.price),
-        }));
+        .filter((item) => item.quantity !== "" || item.price !== "")
+        .map((item) => ({
+          quantity: item.quantity === "" ? 0 : Number(item.quantity),
+          price: item.price === "" ? 0 : Number(item.price),
+        }))
     }
-    return processedOrders;
-  };
+    return processedOrders
+  }
 
-  // Handle form submission for ice orders and other fields
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(false);
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    setSuccess(false)
 
-    const processedIceOrders = processIceOrderData(iceOrders);
+    const processedIceOrders = processIceOrderData(iceOrders)
 
-    let updatedNewDebt = Number(newDebt) || 0;
-    let updatedPayment = Number(payment) || 0;
+    let updatedNewDebt = Number(newDebt) || 0
+    let updatedPayment = Number(payment) || 0
 
-    // If editing, add the additional debt/payment amounts
     if (initialData) {
       if (addDebtAmount) {
-        updatedNewDebt += Number(addDebtAmount) || 0;
+        updatedNewDebt += Number(addDebtAmount) || 0
       }
       if (addPaymentAmount) {
-        updatedPayment += Number(addPaymentAmount) || 0;
+        updatedPayment += Number(addPaymentAmount) || 0
       }
     }
 
@@ -111,281 +99,394 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
       newDebt: updatedNewDebt,
       payment: updatedPayment,
       expenses: Number(expenses) || 0,
-    };
+    }
 
-    const url = initialData ? `https://dl-api-v-01.vercel.app/api/orders/${initialData._id}` : 'https://dl-api-v-01.vercel.app/api/orders';
-    const method = initialData ? 'PUT' : 'POST';
+    const url = initialData
+      ? `https://dl-api-v-01.vercel.app/api/orders/${initialData._id}`
+      : "https://dl-api-v-01.vercel.app/api/orders"
+    const method = initialData ? "PUT" : "POST"
 
     try {
       const response = await fetch(url, {
         method: method,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(orderData),
-      });
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || `Failed to ${initialData ? 'update' : 'save'} customer data.`);
+        const errorData = await response.json()
+        throw new Error(errorData.message || `Failed to ${initialData ? "update" : "save"} customer data.`)
       }
 
-      const data = await response.json();
-      setSuccess(true);
+      const data = await response.json()
+      setSuccess(true)
       if (initialData) {
-        onUpdateSuccess(data);
-        setAddDebtAmount('');
-        setAddPaymentAmount('');
+        onUpdateSuccess && onUpdateSuccess(data)
+        setAddDebtAmount("")
+        setAddPaymentAmount("")
       } else {
-        clearForm();
-        // Reload page to show new data
-        window.location.reload();
+        clearForm()
+        window.location.reload()
       }
     } catch (err) {
-      setError(err.message || 'An unexpected error occurred.');
+      setError(err.message || "An unexpected error occurred.")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
-  // Clear all form fields
   const clearForm = () => {
-    setCustomerName('');
+    setCustomerName("")
     setIceOrders({
-      originalIce: Array(4).fill({ quantity: '', price: '' }),
-      largeHygiene20kg: Array(4).fill({ quantity: '', price: '' }),
-      largeHygiene30kg: Array(4).fill({ quantity: '', price: '' }),
-      smallHygiene20kg: Array(4).fill({ quantity: '', price: '' }),
-      smallHygiene30kg: Array(4).fill({ quantity: '', price: '' }),
-    });
-    setNewDebt(''); // Clear for new entry
-    setPayment(''); // Clear for new entry
-    setExpenses('');
-    setAddDebtAmount(''); // Clear add debt field
-    setAddPaymentAmount(''); // Clear add payment field
-    setPopupIceType(null); // Close any open popup
-    setError(null); // Clear errors
-    setSuccess(false); // Clear success message
-  };
+      originalIce: Array(4).fill({ quantity: "", price: "" }),
+      largeHygiene20kg: Array(4).fill({ quantity: "", price: "" }),
+      largeHygiene30kg: Array(4).fill({ quantity: "", price: "" }),
+      smallHygiene20kg: Array(4).fill({ quantity: "", price: "" }),
+      smallHygiene30kg: Array(4).fill({ quantity: "", price: "" }),
+    })
+    setNewDebt("")
+    setPayment("")
+    setExpenses("")
+    setAddDebtAmount("")
+    setAddPaymentAmount("")
+    setPopupIceType(null)
+    setError(null)
+    setSuccess(false)
+  }
 
-  // Popup close handler (click overlay or close button)
-  const handlePopupClose = () => setPopupIceType(null);
+  const clearFinancialData = () => {
+    setNewDebt("")
+    setPayment("")
+    setExpenses("")
+    setAddDebtAmount("")
+    setAddPaymentAmount("")
+  }
 
-  // Helper function to render ice input rows (for popup)
-  const renderIceInputs = (iceType, label, isPopup = false) => (
-    <div className={isPopup ? "" : "mb-4 p-4 border rounded-md shadow-sm"}>
-      <h3 className={`font-semibold text-lg mb-2`}>{label}</h3>
+  const renderIceInputs = (iceType, label) => (
+    <div className="ice-inputs-container">
+      <h3 className="ice-type-title">{label}</h3>
       {iceOrders[iceType].map((order, index) => (
-        <div key={index} className="grid grid-cols-2 gap-4 mb-2">
-          <div>
-            <label htmlFor={`${iceType}-quantity-${index}`}>ចំណួន (Quantity)</label>
+        <div key={index} className="ice-input-row">
+          <div className="input-group">
+            <label htmlFor={`${iceType}-quantity-${index}`} className="input-label">
+              ចំណួន (Quantity)
+            </label>
             <input
               type="number"
               id={`${iceType}-quantity-${index}`}
               value={order.quantity}
-              onChange={(e) =>
-                handleIceOrderChange(iceType, index, 'quantity', e.target.value)
-              }
+              onChange={(e) => handleIceOrderChange(iceType, index, "quantity", e.target.value)}
+              placeholder="0"
+              className="form-input"
             />
           </div>
-          <div>
-            <label htmlFor={`${iceType}-price-${index}`}>តម្លៃ (Price)</label>
+          <div className="input-group">
+            <label htmlFor={`${iceType}-price-${index}`} className="input-label">
+              តម្លៃ (Price)
+            </label>
             <input
               type="number"
               id={`${iceType}-price-${index}`}
               value={order.price}
-              onChange={(e) =>
-                handleIceOrderChange(iceType, index, 'price', e.target.value)
-              }
+              onChange={(e) => handleIceOrderChange(iceType, index, "price", e.target.value)}
+              placeholder="0"
+              className="form-input"
             />
           </div>
         </div>
       ))}
-      {isPopup && (
-        <div className="flex justify-end space-x-4 mt-6">
-          <button
-            type="button"
-            onClick={() => {
-              setIceOrders((prev) => ({
-                ...prev,
-                [iceType]: Array(4).fill({ quantity: '', price: '' }),
-              }));
-            }}
-          >
-            Clear
-          </button>
-          <button
-            type="button"
-            onClick={handlePopupClose}
-          >
-            Close
-          </button>
+      <div className="popup-actions">
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => {
+            setIceOrders((prev) => ({
+              ...prev,
+              [iceType]: Array(4).fill({ quantity: "", price: "" }),
+            }))
+          }}
+        >
+          Clear
+        </button>
+        <button type="button" className="btn btn-primary" onClick={() => setPopupIceType(null)}>
+          Done
+        </button>
+      </div>
+    </div>
+  )
+
+  const iceTypeLabels = {
+    originalIce: "ទឹកកកដើម (Original Ice)",
+    largeHygiene20kg: "ទឹកកកអនាម័យធំ (Large) 20kg",
+    largeHygiene30kg: "ទឹកកកអនាម័យធំ (Large) 30kg",
+    smallHygiene20kg: "ទឹកកកអនាម័យតូច (Small) 20kg",
+    smallHygiene30kg: "ទឹកកកអនាម័យតូច (Small) 30kg",
+  }
+
+  // Calculate totals for display
+  const currentDebtTotal = (Number(newDebt) || 0) + (Number(addDebtAmount) || 0)
+  const currentPaymentTotal = (Number(payment) || 0) + (Number(addPaymentAmount) || 0)
+  const netBalance = currentDebtTotal - currentPaymentTotal
+
+  return (
+    <div className="ice-order-form">
+      <div className="form-header">
+        <h1 className="form-title">{initialData ? "កែសម្រួលព័ត៌មានអតិថិជន" : "បន្ថែមអតិថិជនថ្មី"}</h1>
+        <p className="form-subtitle">{initialData ? "Edit Customer Information" : "Add New Customer"}</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="form-container">
+        {/* Customer Name */}
+        <div className="form-section customer-section">
+          <div className="section-header">
+            <h2 className="section-title">👤 Customer Information</h2>
+          </div>
+          <div className="section-content">
+            <div className="input-group">
+              <label htmlFor="customerName" className="input-label">
+                គោត្តនាម (Customer Name) *
+              </label>
+              <input
+                type="text"
+                id="customerName"
+                value={customerName}
+                onChange={(e) => setCustomerName(e.target.value)}
+                required
+                placeholder="Enter customer name"
+                className="form-input form-input-large"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Ice Types */}
+        <div className="form-section ice-section">
+          <div className="section-header">
+            <h2 className="section-title">🧊 ប្រភេទទឹកកក (Ice Types)</h2>
+          </div>
+          <div className="section-content">
+            <div className="ice-type-buttons">
+              {Object.entries(iceTypeLabels).map(([key, label]) => (
+                <button key={key} type="button" className="ice-type-btn" onClick={() => setPopupIceType(key)}>
+                  <span className="btn-icon">➕</span>
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Financial Details - Reorganized */}
+        <div className="form-section financial-section">
+          <div className="section-header">
+            <h2 className="section-title">💰 ព័ត៌មានហិរញ្ញវត្ថុ (Financial Details)</h2>
+            <button
+              type="button"
+              className="clear-financial-btn"
+              onClick={clearFinancialData}
+              title="Clear all financial data"
+            >
+              🗑️ Clear
+            </button>
+          </div>
+          <div className="section-content">
+            {/* Financial Summary Card */}
+            {(initialData || Number(newDebt) > 0 || Number(payment) > 0) && (
+              <div className="financial-summary-card">
+                <h3 className="summary-title">📊 Financial Summary</h3>
+                <div className="summary-grid">
+                  <div className="summary-item debt-summary">
+                    <span className="summary-label">Total Debt:</span>
+                    <span className="summary-value debt-value">${currentDebtTotal.toFixed(2)}</span>
+                  </div>
+                  <div className="summary-item payment-summary">
+                    <span className="summary-label">Total Payment:</span>
+                    <span className="summary-value payment-value">${currentPaymentTotal.toFixed(2)}</span>
+                  </div>
+                  <div
+                    className={`summary-item balance-summary ${netBalance >= 0 ? "debt-balance" : "credit-balance"}`}
+                  >
+                    <span className="summary-label">Net Balance:</span>
+                    <span className="summary-value balance-value">
+                      ${Math.abs(netBalance).toFixed(2)} {netBalance >= 0 ? "(Owed)" : "(Credit)"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Debt Management */}
+            <div className="financial-group debt-group">
+              <h3 className="group-title">
+                <span className="group-icon">📈</span>
+                ការគ្រប់គ្រងប្រាក់ជំពាក់ (Debt Management)
+              </h3>
+
+              <div className="financial-inputs-grid">
+                <div className="input-group">
+                  <label htmlFor="newDebt" className="input-label">
+                    ប្រាក់ជំពាក់បច្ចុប្បន្ន (Current Debt)
+                  </label>
+                  <input
+                    type="number"
+                    id="newDebt"
+                    value={newDebt}
+                    onChange={(e) => setNewDebt(e.target.value)}
+                    disabled={!!initialData}
+                    placeholder="0.00"
+                    className="form-input financial-input"
+                    step="0.01"
+                    min="0"
+                  />
+                </div>
+
+                {initialData && (
+                  <div className="input-group add-debt-group">
+                    <label htmlFor="addDebtAmount" className="input-label add-debt-label">
+                      បន្ថែមប្រាក់ជំពាក់ (Add Debt)
+                    </label>
+                    <input
+                      type="number"
+                      id="addDebtAmount"
+                      value={addDebtAmount}
+                      onChange={(e) => setAddDebtAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="form-input financial-input add-debt-input"
+                      step="0.01"
+                      min="0"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Payment Management */}
+            <div className="financial-group payment-group">
+              <h3 className="group-title">
+                <span className="group-icon">💳</span>
+                ការគ្រប់គ្រងការទូទាត់ (Payment Management)
+              </h3>
+
+              <div className="financial-inputs-grid">
+                <div className="input-group">
+                  <label htmlFor="payment" className="input-label">
+                    ប្រាក់សងបច្ចុប្បន្ន (Current Payment)
+                  </label>
+                  <input
+                    type="number"
+                    id="payment"
+                    value={payment}
+                    onChange={(e) => setPayment(e.target.value)}
+                    disabled={!!initialData}
+                    placeholder="0.00"
+                    className="form-input financial-input"
+                    step="0.01"
+                    min="0"
+                  />
+                </div>
+
+                {initialData && (
+                  <div className="input-group add-payment-group">
+                    <label htmlFor="addPaymentAmount" className="input-label add-payment-label">
+                      បន្ថែមការទូទាត់ (Add Payment)
+                    </label>
+                    <input
+                      type="number"
+                      id="addPaymentAmount"
+                      value={addPaymentAmount}
+                      onChange={(e) => setAddPaymentAmount(e.target.value)}
+                      placeholder="0.00"
+                      className="form-input financial-input add-payment-input"
+                      step="0.01"
+                      min="0"
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Expenses */}
+            <div className="financial-group expenses-group">
+              <h3 className="group-title">
+                <span className="group-icon">🍽️</span>
+                ការចំណាយ (Expenses)
+              </h3>
+
+              <div className="input-group">
+                <label htmlFor="expenses" className="input-label">
+                  ថ្លៃសាំង បាយ (Gas & Food Expenses)
+                </label>
+                <input
+                  type="number"
+                  id="expenses"
+                  value={expenses}
+                  onChange={(e) => setExpenses(e.target.value)}
+                  placeholder="0.00"
+                  className="form-input financial-input expenses-input"
+                  step="0.01"
+                  min="0"
+                />
+              </div>
+            </div>
+
+            {/* Form Actions - Integrated */}
+            <div className="financial-actions">
+              <button
+                type="button"
+                className="btn btn-secondary btn-large"
+                onClick={initialData ? onClose : clearForm}
+                disabled={loading}
+              >
+                <span className="btn-icon">❌</span>
+                {initialData ? "Cancel" : "Clear All"}
+              </button>
+              <button type="submit" disabled={loading} className="btn btn-primary btn-large">
+                {loading ? (
+                  <>
+                    <div className="loading-spinner-small"></div>
+                    {initialData ? "Updating..." : "Saving..."}
+                  </>
+                ) : (
+                  <>
+                    <span className="btn-icon">{initialData ? "✏️" : "💾"}</span>
+                    {initialData ? "Update Customer" : "Save Customer"}
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Status Messages */}
+        {loading && (
+          <div className="alert alert-info">
+            <div className="loading-spinner"></div>
+            {initialData ? "Updating customer data..." : "Saving customer data..."}
+          </div>
+        )}
+
+        {error && <div className="alert alert-error">❌ Error: {error}</div>}
+
+        {success && (
+          <div className="alert alert-success">✅ Customer data {initialData ? "updated" : "saved"} successfully!</div>
+        )}
+      </form>
+
+      {/* Popup Modal */}
+      {popupIceType && (
+        <div className="popup-overlay" onClick={() => setPopupIceType(null)}>
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
+            <button className="popup-close-btn" type="button" onClick={() => setPopupIceType(null)}>
+              ✕
+            </button>
+            {renderIceInputs(popupIceType, iceTypeLabels[popupIceType])}
+          </div>
         </div>
       )}
     </div>
-  );
+  )
+}
 
-  return (
-    <div className="container">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        {initialData ? 'កែសម្រួលព័ត៌មានអតិថិជន (Edit Customer Info)' : 'បន្ថែមអតិថិជនថ្មី (Add New Customer)'}
-      </h1>
-      <form onSubmit={handleSubmit}>
-        {/* Customer Name */}
-        <div className="mb-4">
-          <label htmlFor="customerName">គោត្តនាម (Customer Name)</label>
-          <input
-            type="text"
-            id="customerName"
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            required
-          />
-        </div>
-
-        {/* Ice Type Section */}
-        <div className="mb-6">
-          <h2 className="text-2xl font-semibold mb-4">ប្រភេទទឹកកក (Ice Type)</h2>
-          <div className="grid gap-4">
-            <button type="button" className="font-semibold text-left border rounded-md p-4"
-              onClick={() => setPopupIceType('originalIce')}>
-              ទឹកកកដើម (Original Ice)
-            </button>
-            <button type="button" className="font-semibold text-left border rounded-md p-4"
-              onClick={() => setPopupIceType('largeHygiene20kg')}>
-              ទឹកកកអនាម័យធំ (Large) 20kg
-            </button>
-            <button type="button" className="font-semibold text-left border rounded-md p-4"
-              onClick={() => setPopupIceType('largeHygiene30kg')}>
-              ទឹកកកអនាម័យធំ (Large) 30kg
-            </button>
-            <button type="button" className="font-semibold text-left border rounded-md p-4"
-              onClick={() => setPopupIceType('smallHygiene20kg')}>
-              ទឹកកកអនាម័យតូច (Small) 20kg
-            </button>
-            <button type="button" className="font-semibold text-left border rounded-md p-4"
-              onClick={() => setPopupIceType('smallHygiene30kg')}>
-              ទឹកកកអនាម័យតូច (Small) 30kg
-            </button>
-          </div>
-        </div>
-
-        {/* Popup for ice type input */}
-        {popupIceType && (
-          <div className="popup-overlay" onClick={handlePopupClose}>
-            <div className="popup-content" onClick={e => e.stopPropagation()}>
-              <button className="popup-close-btn" type="button" onClick={handlePopupClose}>&times;</button>
-              {renderIceInputs(
-                popupIceType,
-                {
-                  originalIce: 'ទឹកកកដើម (Original Ice)',
-                  largeHygiene20kg: 'ទឹកកកអនាម័យធំ (Large) 20kg',
-                  largeHygiene30kg: 'ទឹកកកអនាម័យធំ (Large) 30kg',
-                  smallHygiene20kg: 'ទឹកកកអនាម័យតូច (Small) 20kg',
-                  smallHygiene30kg: 'ទឹកកកអនាម័យតូច (Small) 30kg'
-                }[popupIceType],
-                true
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Financial Details */}
-        <h2 className="text-2xl font-semibold mb-4 mt-6">ព័ត៌មានហិរញ្ញវត្ថុ (Financial Details)</h2>
-
-        {/* Current New Debt / Direct New Debt Input */}
-        <div className="mb-4">
-          <label htmlFor="newDebt">ប្រាក់ជំពាក់បច្ចុប្បន្ន (Current New Debt)</label>
-          <input
-            type="number"
-            id="newDebt"
-            value={newDebt}
-            onChange={(e) => setNewDebt(e.target.value)}
-            disabled={!!initialData} // Disable input if editing
-            readOnly={!!initialData} // Prevent input if editing
-          />
-        </div>
-
-        {/* Add New Debt Section (only for existing customers) */}
-        {initialData && (
-          <div className="mb-4 p-4 border rounded-md shadow-sm">
-            <label htmlFor="addDebtAmount" className="mb-2">
-              បញ្ចូលប្រាក់ជំពាក់ថ្មីបន្ថែម (Add More New Debt)
-            </label>
-            <input
-              type="number"
-              id="addDebtAmount"
-              value={addDebtAmount}
-              onChange={(e) => setAddDebtAmount(e.target.value)}
-              placeholder="Enter amount to add"
-            />
-          </div>
-        )}
-
-        {/* Current Payment / Direct Payment Input */}
-        <div className="mb-4">
-          <label htmlFor="payment">ប្រាក់សងបច្ចុប្បន្ន (Current Payment)</label>
-          <input
-            type="number"
-            id="payment"
-            value={payment}
-            onChange={(e) => setPayment(e.target.value)}
-            disabled={!!initialData} // Disable input if editing
-            readOnly={!!initialData} // Prevent input if editing
-          />
-        </div>
-
-        {/* Add Payment Section (only for existing customers) */}
-        {initialData && (
-          <div className="mb-4 p-4 border rounded-md shadow-sm">
-            <label htmlFor="addPaymentAmount" className="mb-2">
-              បញ្ចូលប្រាក់សងបន្ថែម (Add More Payment)
-            </label>
-            <input
-              type="number"
-              id="addPaymentAmount"
-              value={addPaymentAmount}
-              onChange={(e) => setAddPaymentAmount(e.target.value)}
-              placeholder="Enter amount to pay"
-            />
-          </div>
-        )}
-
-        {/* Expenses */}
-        <div className="mb-6">
-          <label htmlFor="expenses">ថ្លៃសាំង បាយ (Expenses)</label>
-          <input
-            type="number"
-            id="expenses"
-            value={expenses}
-            onChange={(e) => setExpenses(e.target.value)}
-          />
-        </div>
-
-        {/* Loading, Error, and Success Messages */}
-        {loading && <p className="text-center mb-4">{initialData ? 'Updating data...' : 'Saving data...'}</p>}
-        {error && <p className="text-center mb-4" style={{ color: 'red' }}>Error: {error}</p>}
-        {success && <p className="text-center mb-4" style={{ color: 'green' }}>Customer data {initialData ? 'updated' : 'saved'} successfully!</p>}
-
-        {/* Action Buttons */}
-        <div className="flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={initialData ? onClose : clearForm}
-            disabled={loading}
-          >
-            {initialData ? 'Cancel' : 'Clear'}
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? (initialData ? 'Updating...' : 'Saving...') : (initialData ? 'Update Customer' : 'Save Customer')}
-          </button>
-        </div>
-      </form>
-    </div>
-  );
-};
-
-export default IceOrderForm;
+export default IceOrderForm
