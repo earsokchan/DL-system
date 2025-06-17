@@ -677,7 +677,7 @@ const handleExportToExcel = () => {
                 <div
                     id="customer-table"
                     style={{
-                        maxHeight: "80vh",
+                        maxHeight: "95vh",
                         overflowY: "auto",
                         overflowX: "hidden",
                         width: "120%"
