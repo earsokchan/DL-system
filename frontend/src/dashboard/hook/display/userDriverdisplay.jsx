@@ -6,13 +6,14 @@ import * as XLSX from 'xlsx'; // Use xlsx-style for styling
 import { saveAs } from 'file-saver';
 
 const columnBgColors = {
-    originalIce: "#fde68a",         // yellow-200
-    largeHygiene20kg: "#bbf7d0",    // green-100
-    largeHygiene30kg: "#bae6fd",    // blue-100
-    smallHygiene20kg: "#fca5a5",    // red-200
-    smallHygiene2kg: "#ddd6fe",     // purple-100
+    originalIce: "#fefce8",         // yellow-50
+    largeHygiene20kg: "#f0fdf4",    // green-50
+    largeHygiene30kg: "#f0f9ff",    // blue-50
+    smallHygiene20kg: "#fef2f2",    // red-50
+    smallHygiene30kg: "#f3e8ff",    // violet-50 (added)
+    smallHygiene2kg: "#f5f3ff",     // purple-50
     // fallback for "no orders"
-    default: "#f3f4f6"
+    default: "#f9fafb"              // gray-50
 };
 
 const iceTypeColors = { ...columnBgColors };
@@ -208,6 +209,7 @@ const handleExportToExcel = () => {
         { key: 'largeHygiene20kg', label: 'ទឹកកកអនាម័យធំ 20kg' },
         { key: 'largeHygiene30kg', label: 'ទឹកកកអនាម័យធំ 30kg' },
         { key: 'smallHygiene20kg', label: 'ទឹកកកអនាម័យតូច 20kg' },
+        { key: 'smallHygiene30kg', label: 'ទឹកកកអនាម័យតូច 30kg' }, // added
         { key: 'smallHygiene2kg', label: 'ទឹកកកអនាម័យតូច 2kg' },
     ];
 
@@ -290,8 +292,6 @@ const handleExportToExcel = () => {
     dataForExcel.push([
         'សរុប', '', '',
         tableTotals.totalIceQuantity,
-        tableTotals.totalQuantity,
-        tableTotals.totalPrice,
         tableTotals.totalRevenue,
         tableTotals.totalPrevDebt,
         tableTotals.totalNewDebt,
@@ -331,7 +331,8 @@ const handleExportToExcel = () => {
         let numRowsForCustomer = 0;
         const customerIceTypes = [
             'originalIce', 'largeHygiene20kg', 'largeHygiene30kg',
-            'smallHygiene20kg', 'smallHygiene2kg'
+            'smallHygiene20kg', 'smallHygiene30kg', // added
+            'smallHygiene2kg'
         ];
         customerIceTypes.forEach(typeKey => {
             const orders = customer.iceOrders?.[typeKey] || [];
@@ -389,6 +390,7 @@ const handleExportToExcel = () => {
             { key: 'largeHygiene20kg', label: 'ទឹកកកអនាម័យធំ 20kg' },
             { key: 'largeHygiene30kg', label: 'ទឹកកកអនាម័យធំ 30kg' },
             { key: 'smallHygiene20kg', label: 'ទឹកកកអនាម័យតូច 20kg' },
+            { key: 'smallHygiene30kg', label: 'ទឹកកកអនាម័យតូច 30kg' }, // added
             { key: 'smallHygiene2kg', label: 'ទឹកកកអនាម័យតូច 2kg' },
         ];
 
@@ -447,6 +449,12 @@ const handleExportToExcel = () => {
             const orders = customer.iceOrders?.[type.key] || [];
             const validTypeOrders = orders.filter((order) => order.quantity !== 0 || order.price !== 0);
 
+            // Calculate total per ice type (sum of quantity * price for this ice type)
+            const totalPerIceTypeSum = validTypeOrders.reduce(
+                (sum, order) => sum + ((parseFloat(order.quantity) || 0) * (parseFloat(order.price) || 0)),
+                0
+            );
+
             if (validTypeOrders.length > 0) {
                 validTypeOrders.forEach((order, orderIndex) => {
                     const totalPerIceType = (parseFloat(order.quantity) || 0) * (parseFloat(order.price) || 0);
@@ -484,7 +492,17 @@ const handleExportToExcel = () => {
                             ) : null}
                             <td className="border px-4 py-2" style={{ backgroundColor: bgColor }}>{order.quantity}</td>
                             <td className="border px-4 py-2" style={{ backgroundColor: bgColor }}>{order.price}</td>
-                            <td className="border px-4 py-2" style={{ backgroundColor: bgColor }}>{totalPerIceType}</td>
+                            {/* --- CHANGED: show total per ice type with rowSpan for first order of each ice type --- */}
+                            {orderIndex === 0 ? (
+                                <td
+                                    rowSpan={validTypeOrders.length}
+                                    className="border px-4 py-2"
+                                    style={{ backgroundColor: bgColor }}
+                                >
+                                    {totalPerIceTypeSum}
+                                </td>
+                            ) : null}
+                            {/* --- END CHANGE --- */}
                             {firstRowForCustomer && (
                                 <>
                                     <td rowSpan={totalValidOrdersAcrossAllTypes} className="border px-4 py-2">
@@ -538,6 +556,8 @@ const handleExportToExcel = () => {
             acc.totalIceQuantity += calculateTotalQuantity(customer.iceOrders);
             acc.totalRevenue += calculateTotalRevenue(customer.iceOrders);
             acc.totalDebt += customer.totalDebt !== undefined ? parseFloat(customer.totalDebt) || 0 : 0;
+            acc.totalRevenue += calculateTotalRevenue(customer.iceOrders);
+            acc.totalDebt += customer.totalDebt !== undefined ? parseFloat(customer.totalDebt) || 0 : 0;
             acc.totalNetIncome += (calculateTotalRevenue(customer.iceOrders) - (parseFloat(customer.expenses) || 0));
             return acc;
         },
@@ -562,6 +582,7 @@ const handleExportToExcel = () => {
                 'largeHygiene20kg',
                 'largeHygiene30kg',
                 'smallHygiene20kg',
+                'smallHygiene30kg', // added
                 'smallHygiene2kg'
             ];
             iceTypes.forEach(typeKey => {
@@ -740,8 +761,8 @@ const handleExportToExcel = () => {
                             >
                                 <td className="border px-4 py-2 text-center" colSpan={3}>សរុប</td>
                                 <td className="border px-4 py-2" style={{ backgroundColor: columnBgColors.totalIce }}>{tableTotals.totalIceQuantity}</td>
-                                <td className="border px-4 py-2" style={{ backgroundColor: columnBgColors.quantity }}>{tableTotals.totalQuantity}</td>
-                                <td className="border px-4 py-2" style={{ backgroundColor: columnBgColors.price }}>{tableTotals.totalPrice}</td>
+                                <td className="border px-4 py-2" style={{ backgroundColor: columnBgColors.quantity }}></td>
+                                <td className="border px-4 py-2" style={{ backgroundColor: columnBgColors.price }}></td>
                                 <td className="border px-4 py-2" style={{ backgroundColor: columnBgColors.total }}>{tableTotals.totalRevenue}</td>
                                 <td className="border px-4 py-2">{tableTotals.totalPrevDebt}</td>
                                 <td className="border px-4 py-2">{tableTotals.totalNewDebt}</td>
