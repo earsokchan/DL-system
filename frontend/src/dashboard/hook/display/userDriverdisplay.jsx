@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import IceOrderForm from '../userDriver';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import * as XLSX from 'xlsx'; // Use xlsx-style for styling
+import * as XLSX from 'xlsx-js-style'; // Use xlsx-js-style for styling
 import { saveAs } from 'file-saver';
 
 const columnBgColors = {
@@ -30,7 +30,7 @@ const Display = () => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch('https://dl-api-v-01.vercel.app/api/orders');
+            const response = await fetch('http://localhost:5000/api/orders');
             if (!response.ok) {
                 const errorData = await response.json();
                 throw new Error(errorData.message || 'Failed to fetch customer data.');
@@ -47,7 +47,7 @@ const Display = () => {
 
     const fetchLatestReportDebts = async () => {
         try {
-            const res = await fetch('https://dl-api-v-01.vercel.app/api/reports');
+            const res = await fetch('http://localhost:5000/api/reports');
             if (!res.ok) return;
             const reports = await res.json();
             if (!Array.isArray(reports) || reports.length === 0) return;
@@ -102,7 +102,7 @@ const Display = () => {
     const handleDelete = async (id) => {
         if (window.confirm('Are you sure you want to delete this customer record?')) {
             try {
-                const response = await fetch(`https://dl-api-v-01.vercel.app/api/orders/${id}`, {
+                const response = await fetch(`http://localhost:5000/api/orders/${id}`, {
                     method: 'DELETE',
                 });
 
@@ -144,7 +144,7 @@ const Display = () => {
                 customersData: customers
             };
 
-            const dbResponse = await fetch('https://dl-api-v-01.vercel.app/api/reports', {
+            const dbResponse = await fetch('http://localhost:5000/api/reports', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ const Display = () => {
     const saveTableTotalsToApi = async () => {
         try {
             const currentTableTotals = calculateTableTotals();
-            const response = await fetch('https://dl-api-v-01.vercel.app/api/table-totals', {
+            const response = await fetch('http://localhost:5000/api/table-totals', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -194,193 +194,279 @@ const Display = () => {
         await saveTableTotalsToApi();
     };
 
-const handleExportToExcel = () => {
-    const dataForExcel = [];
+const excelHeaderStyles = [
+    { fill: { fgColor: { rgb: "FEF9C3" } }, font: { bold: true } }, // ល.រ
+    { fill: { fgColor: { rgb: "FEF9C3" } }, font: { bold: true } }, // គោត្តនាម
+    { fill: { fgColor: { rgb: "FDE68A" } }, font: { bold: true } }, // ប្រភេទទឹកកក
+    { fill: { fgColor: { rgb: "BBF7D0" } }, font: { bold: true } }, // សរុបបរិមាណទឹកកក
+    { fill: { fgColor: { rgb: "BBF7D0" } }, font: { bold: true } }, // បរិមាណ
+    { fill: { fgColor: { rgb: "BAE6FD" } }, font: { bold: true } }, // តម្លៃរាយ
+    { fill: { fgColor: { rgb: "FCA5A5" } }, font: { bold: true } }, // សរុប
+    { fill: { fgColor: { rgb: "BAE6FD" } }, font: { bold: true } }, // ប្រាក់ជំពាក់ចាស់
+    { fill: { fgColor: { rgb: "BAE6FD" } }, font: { bold: true } }, // ប្រាក់ជំពាក់ថ្មី
+    { fill: { fgColor: { rgb: "BAE6FD" } }, font: { bold: true } }, // ប្រាក់សង
+    { fill: { fgColor: { rgb: "BAE6FD" } }, font: { bold: true } }, // សរុបប្រាក់ជំពាក់
+    { fill: { fgColor: { rgb: "FCA5A5" } }, font: { bold: true } }, // ថ្លៃសាំង បាយ
+    { fill: { fgColor: { rgb: "DDD6FE" } }, font: { bold: true } }, // សរុបចំណូល
+];
 
-    // Add headers
-    dataForExcel.push([
-        'ល.រ', 'គោត្តនាម', 'ប្រភេទទឹកកក', 'សរុបបរិមាណទឹកកក', 'បរិមាណ', 'តម្លៃរាយ',
-        'សរុប', 'ប្រាក់ជំពាក់ចាស់', 'ប្រាក់ជំពាក់ថ្មី', 'ប្រាក់សង', 'សរុបប្រាក់ជំពាក់',
-        'ថ្លៃសាំង បាយ', 'សរុបចំណូល'
-    ]);
+const excelIceTypeBg = {
+    originalIce:   { fill: { fgColor: { rgb: "FEFCE8" } } }, // yellow-50
+    largeHygiene20kg: { fill: { fgColor: { rgb: "F0FDF4" } } }, // green-50
+    largeHygiene30kg: { fill: { fgColor: { rgb: "F0F9FF" } } }, // blue-50
+    smallHygiene20kg: { fill: { fgColor: { rgb: "FEF2F2" } } }, // red-50
+    smallHygiene30kg: { fill: { fgColor: { rgb: "F3E8FF" } } }, // violet-50
+    smallHygiene2kg:  { fill: { fgColor: { rgb: "F5F3FF" } } }, // purple-50
+    default:          { fill: { fgColor: { rgb: "F9FAFB" } } }, // gray-50
+};
 
-    const iceTypes = [
-        { key: 'originalIce', label: 'ទឹកកកដើម' },
-        { key: 'largeHygiene20kg', label: 'ទឹកកកអនាម័យធំ 20kg' },
-        { key: 'largeHygiene30kg', label: 'ទឹកកកអនាម័យធំ 30kg' },
-        { key: 'smallHygiene20kg', label: 'ទឹកកកអនាម័យតូច 20kg' },
-        { key: 'smallHygiene30kg', label: 'ទឹកកកអនាម័យតូច 30kg' }, // added
-        { key: 'smallHygiene2kg', label: 'ទឹកកកអនាម័យតូច 2kg' },
-    ];
+const excelTotalRowStyle = { fill: { fgColor: { rgb: "DBEAFE" } }, font: { bold: true } };
 
-    customers.forEach((customer, custIndex) => {
-        let firstRowForCustomer = true;
-        let totalValidOrdersAcrossAllTypes = 0;
-        iceTypes.forEach((type) => {
-            const orders = customer.iceOrders?.[type.key] || [];
-            totalValidOrdersAcrossAllTypes += orders.filter((order) => order.quantity || order.price).length;
-        });
+    const handleExportToExcel = () => {
+        const dataForExcel = [];
 
-        if (totalValidOrdersAcrossAllTypes === 0) {
-            dataForExcel.push([
-                custIndex + 1,
-                customer.customerName,
-                '-', // Ice Type
-                0, // Total Ice Quantity for type
-                0, // Quantity
-                0, // Price
-                0, // Total
-                reportDebts[customer.customerName] !== undefined ? reportDebts[customer.customerName] : (customer.previousDebt || 0),
-                customer.newDebt || 0,
-                customer.payment || 0,
-                customer.totalDebt !== undefined ? customer.totalDebt : 'N/A',
-                customer.expenses || 0,
-                (calculateTotalRevenue(customer.iceOrders) - (parseFloat(customer.expenses) || 0))
-            ]);
-        } else {
+        // Add headers
+        dataForExcel.push([
+            'ល.រ', 'គោត្តនាម', 'ប្រភេទទឹកកក', 'សរុបបរិមាណទឹកកក', 'បរិមាណ', 'តម្លៃរាយ',
+            'សរុប', 'ប្រាក់ជំពាក់ចាស់', 'ប្រាក់ជំពាក់ថ្មី', 'ប្រាក់សង', 'សរុបប្រាក់ជំពាក់',
+            'ថ្លៃសាំង បាយ', 'សរុបចំណូល'
+        ]);
+
+        const iceTypes = [
+            { key: 'originalIce', label: 'ទឹកកកដើម' },
+            { key: 'largeHygiene20kg', label: 'ទឹកកកអនាម័យធំ 20kg' },
+            { key: 'largeHygiene30kg', label: 'ទឹកកកអនាម័យធំ 30kg' },
+            { key: 'smallHygiene20kg', label: 'ទឹកកកអនាម័យតូច 20kg' },
+            { key: 'smallHygiene30kg', label: 'ទឹកកកអនាម័យតូច 30kg' }, // added
+            { key: 'smallHygiene2kg', label: 'ទឹកកកអនាម័យតូច 2kg' },
+        ];
+
+        customers.forEach((customer, custIndex) => {
+            let firstRowForCustomer = true;
+            let totalValidOrdersAcrossAllTypes = 0;
             iceTypes.forEach((type) => {
                 const orders = customer.iceOrders?.[type.key] || [];
-                const validTypeOrders = orders.filter((order) => order.quantity !== 0 || order.price !== 0);
-
-                if (validTypeOrders.length > 0) {
-                    validTypeOrders.forEach((order, orderIndex) => {
-                        const totalPerIceType = (parseFloat(order.quantity) || 0) * (parseFloat(order.price) || 0);
-
-                        const row = [];
-                        if (firstRowForCustomer) {
-                            row.push(custIndex + 1);
-                            row.push(customer.customerName);
-                        } else {
-                            row.push('', ''); // Empty for merged cells
-                        }
-
-                        if (orderIndex === 0) {
-                            row.push(type.label);
-                            row.push(calculateTotalQuantity(customer.iceOrders, type.key));
-                        } else {
-                            row.push('', ''); // Empty for merged cells
-                        }
-
-                        row.push(order.quantity);
-                        row.push(order.price);
-                        row.push(totalPerIceType);
-
-                        if (firstRowForCustomer) {
-                            row.push(
-                                reportDebts[customer.customerName] !== undefined
-                                    ? reportDebts[customer.customerName]
-                                    : (customer.previousDebt || 0)
-                            );
-                            row.push(customer.newDebt || 0);
-                            row.push(customer.payment || 0);
-                            row.push(customer.totalDebt !== undefined ? customer.totalDebt : 'N/A');
-                            row.push(customer.expenses || 0);
-                            row.push(calculateTotalRevenue(customer.iceOrders) - (parseFloat(customer.expenses) || 0));
-                        } else {
-                            row.push('', '', '', '', '', ''); // Empty for merged cells
-                        }
-                        dataForExcel.push(row);
-                        firstRowForCustomer = false;
-                    });
-                }
+                totalValidOrdersAcrossAllTypes += orders.filter((order) => order.quantity || order.price).length;
             });
-        }
-    });
 
-    // Add totals row
-    const tableTotals = calculateTableTotals();
-    dataForExcel.push([
-        'សរុប', '', '',
-        tableTotals.totalIceQuantity,
-        tableTotals.totalRevenue,
-        tableTotals.totalPrevDebt,
-        tableTotals.totalNewDebt,
-        tableTotals.totalPayment,
-        tableTotals.totalTotalDebt,
-        tableTotals.totalExpenses,
-        tableTotals.totalNetIncome
-    ]);
+            if (totalValidOrdersAcrossAllTypes === 0) {
+                dataForExcel.push([
+                    custIndex + 1,
+                    customer.customerName,
+                    '-', // Ice Type
+                    0, // Total Ice Quantity for type
+                    0, // Quantity
+                    0, // Price
+                    0, // Total
+                    reportDebts[customer.customerName] !== undefined ? reportDebts[customer.customerName] : (customer.previousDebt || 0),
+                    customer.newDebt || 0,
+                    customer.payment || 0,
+                    customer.totalDebt !== undefined ? customer.totalDebt : 'N/A',
+                    customer.expenses || 0,
+                    (calculateTotalRevenue(customer.iceOrders) - (parseFloat(customer.expenses) || 0))
+                ]);
+            } else {
+                iceTypes.forEach((type) => {
+                    const orders = customer.iceOrders?.[type.key] || [];
+                    const validTypeOrders = orders.filter((order) => order.quantity !== 0 || order.price !== 0);
 
-    const ws = XLSX.utils.aoa_to_sheet(dataForExcel);
+                    if (validTypeOrders.length > 0) {
+                        validTypeOrders.forEach((order, orderIndex) => {
+                            const totalPerIceType = (parseFloat(order.quantity) || 0) * (parseFloat(order.price) || 0);
 
-    // Set column widths for better readability
-    const wscols = [
-        { wch: 5 }, // ល.រ
-        { wch: 20 }, // គោត្តនាម
-        { wch: 25 }, // ប្រភេទទឹកកក
-        { wch: 20 }, // សរុបបរិមាណទឹកកក
-        { wch: 10 }, // បរិមាណ
-        { wch: 10 }, // តម្លៃរាយ
-        { wch: 15 }, // សរុប
-        { wch: 15 }, // ប្រាក់ជំពាក់ចាស់
-        { wch: 15 }, // ប្រាក់ជំពាក់ថ្មី
-        { wch: 15 }, // ប្រាក់សង
-        { wch: 18 }, // សរុបប្រាក់ជំពាក់
-        { wch: 15 }, // ថ្លៃសាំង បាយ
-        { wch: 15 } // សរុបចំណូល
-    ];
-    ws['!cols'] = wscols;
+                            const row = [];
+                            if (firstRowForCustomer) {
+                                row.push(custIndex + 1);
+                                row.push(customer.customerName);
+                            } else {
+                                row.push('', ''); // Empty for merged cells
+                            }
 
-    // Apply merges for customer information and ice type totals
-    if (!ws['!merges']) {
-        ws['!merges'] = [];
-    }
+                            if (orderIndex === 0) {
+                                row.push(type.label);
+                                row.push(calculateTotalQuantity(customer.iceOrders, type.key));
+                            } else {
+                                row.push('', ''); // Empty for merged cells
+                            }
 
-    let currentRow = 1; // Start from row 1 (0-indexed) after headers
-    customers.forEach(customer => {
-        let numRowsForCustomer = 0;
-        const customerIceTypes = [
-            'originalIce', 'largeHygiene20kg', 'largeHygiene30kg',
-            'smallHygiene20kg', 'smallHygiene30kg', // added
-            'smallHygiene2kg'
-        ];
-        customerIceTypes.forEach(typeKey => {
-            const orders = customer.iceOrders?.[typeKey] || [];
-            numRowsForCustomer += orders.filter(order => order.quantity !== 0 || order.price !== 0).length;
+                            row.push(order.quantity);
+                            row.push(order.price);
+                            row.push(totalPerIceType);
+
+                            if (firstRowForCustomer) {
+                                row.push(
+                                    reportDebts[customer.customerName] !== undefined
+                                        ? reportDebts[customer.customerName]
+                                        : (customer.previousDebt || 0)
+                                );
+                                row.push(customer.newDebt || 0);
+                                row.push(customer.payment || 0);
+                                row.push(customer.totalDebt !== undefined ? customer.totalDebt : 'N/A');
+                                row.push(customer.expenses || 0);
+                                row.push(calculateTotalRevenue(customer.iceOrders) - (parseFloat(customer.expenses) || 0));
+                            } else {
+                                row.push('', '', '', '', '', ''); // Empty for merged cells
+                            }
+                            dataForExcel.push(row);
+                            firstRowForCustomer = false;
+                        });
+                    }
+                });
+            }
         });
 
-        if (numRowsForCustomer === 0) {
-            numRowsForCustomer = 1; // For customers with no specific orders
+        // Add totals row
+        const tableTotals = calculateTableTotals();
+        dataForExcel.push([
+            'សរុប', '', '',
+            tableTotals.totalIceQuantity,
+            tableTotals.totalRevenue,
+            tableTotals.totalPrevDebt,
+            tableTotals.totalNewDebt,
+            tableTotals.totalPayment,
+            tableTotals.totalTotalDebt,
+            tableTotals.totalExpenses,
+            tableTotals.totalNetIncome
+        ]);
+
+        // Build worksheet with styles
+        const ws = XLSX.utils.aoa_to_sheet(dataForExcel);
+
+        // Apply header styles
+        for (let c = 0; c < excelHeaderStyles.length; c++) {
+            const cell = ws[XLSX.utils.encode_cell({ r: 0, c })];
+            if (cell) cell.s = excelHeaderStyles[c];
         }
 
-        if (numRowsForCustomer > 1) {
-            ws['!merges'].push(XLSX.utils.decode_range(`A${currentRow + 1}:A${currentRow + numRowsForCustomer}`));
-            ws['!merges'].push(XLSX.utils.decode_range(`B${currentRow + 1}:B${currentRow + numRowsForCustomer}`));
-            ws['!merges'].push(XLSX.utils.decode_range(`H${currentRow + 1}:H${currentRow + numRowsForCustomer}`));
-            ws['!merges'].push(XLSX.utils.decode_range(`I${currentRow + 1}:I${currentRow + numRowsForCustomer}`));
-            ws['!merges'].push(XLSX.utils.decode_range(`J${currentRow + 1}:J${currentRow + numRowsForCustomer}`));
-            ws['!merges'].push(XLSX.utils.decode_range(`K${currentRow + 1}:K${currentRow + numRowsForCustomer}`));
-            ws['!merges'].push(XLSX.utils.decode_range(`L${currentRow + 1}:L${currentRow + numRowsForCustomer}`));
-            ws['!merges'].push(XLSX.utils.decode_range(`M${currentRow + 1}:M${currentRow + numRowsForCustomer}`));
+        // Apply row/cell styles for data rows
+        let rowIdx = 1;
+        customers.forEach((customer, custIndex) => {
+            let firstRowForCustomer = true;
+            let totalValidOrdersAcrossAllTypes = 0;
+            const iceTypes = [
+                { key: 'originalIce', label: 'ទឹកកកដើម' },
+                { key: 'largeHygiene20kg', label: 'ទឹកកកអនាម័យធំ 20kg' },
+                { key: 'largeHygiene30kg', label: 'ទឹកកកអនាម័យធំ 30kg' },
+                { key: 'smallHygiene20kg', label: 'ទឹកកកអនាម័យតូច 20kg' },
+                { key: 'smallHygiene30kg', label: 'ទឹកកកអនាម័យតូច 30kg' },
+                { key: 'smallHygiene2kg', label: 'ទឹកកកអនាម័យតូច 2kg' },
+            ];
+            iceTypes.forEach((type) => {
+                const orders = customer.iceOrders?.[type.key] || [];
+                totalValidOrdersAcrossAllTypes += orders.filter((order) => order.quantity || order.price).length;
+            });
 
-            let currentIceTypeRow = currentRow;
+            if (totalValidOrdersAcrossAllTypes === 0) {
+                // No orders, style the row with default bg
+                for (let c = 0; c < 13; c++) {
+                    const cell = ws[XLSX.utils.encode_cell({ r: rowIdx, c })];
+                    if (cell) cell.s = { ...excelIceTypeBg.default };
+                }
+                rowIdx++;
+            } else {
+                iceTypes.forEach((type) => {
+                    const orders = customer.iceOrders?.[type.key] || [];
+                    const validTypeOrders = orders.filter((order) => order.quantity !== 0 || order.price !== 0);
+                    if (validTypeOrders.length > 0) {
+                        validTypeOrders.forEach((order, orderIndex) => {
+                            // Columns: 2=ice type, 3=total qty, 4=qty, 5=price, 6=total
+                            // Style ice type columns with their color
+                            for (let c = 2; c <= 6; c++) {
+                                const cell = ws[XLSX.utils.encode_cell({ r: rowIdx, c })];
+                                if (cell) cell.s = { ...excelIceTypeBg[type.key] };
+                            }
+                            rowIdx++;
+                        });
+                    }
+                });
+            }
+        });
+
+        // Style the total row at the end
+        const totalRowIdx = rowIdx;
+        for (let c = 0; c < 13; c++) {
+            const cell = ws[XLSX.utils.encode_cell({ r: totalRowIdx, c })];
+            if (cell) cell.s = { ...excelTotalRowStyle };
+        }
+
+        // Set column widths for better readability
+        const wscols = [
+            { wch: 5 }, // ល.រ
+            { wch: 20 }, // គោត្តនាម
+            { wch: 25 }, // ប្រភេទទឹកកក
+            { wch: 20 }, // សរុបបរិមាណទឹកកក
+            { wch: 10 }, // បរិមាណ
+            { wch: 10 }, // តម្លៃរាយ
+            { wch: 15 }, // សរុប
+            { wch: 15 }, // ប្រាក់ជំពាក់ចាស់
+            { wch: 15 }, // ប្រាក់ជំពាក់ថ្មី
+            { wch: 15 }, // ប្រាក់សង
+            { wch: 18 }, // សរុបប្រាក់ជំពាក់
+            { wch: 15 }, // ថ្លៃសាំង បាយ
+            { wch: 15 } // សរុបចំណូល
+        ];
+        ws['!cols'] = wscols;
+
+        // Apply merges for customer information and ice type totals
+        if (!ws['!merges']) {
+            ws['!merges'] = [];
+        }
+
+        let currentRow = 1; // Start from row 1 (0-indexed) after headers
+        customers.forEach(customer => {
+            let numRowsForCustomer = 0;
+            const customerIceTypes = [
+                'originalIce', 'largeHygiene20kg', 'largeHygiene30kg',
+                'smallHygiene20kg', 'smallHygiene30kg', // added
+                'smallHygiene2kg'
+            ];
             customerIceTypes.forEach(typeKey => {
                 const orders = customer.iceOrders?.[typeKey] || [];
-                const validTypeOrders = orders.filter(order => order.quantity !== 0 || order.price !== 0);
-                if (validTypeOrders.length > 1) {
-                    ws['!merges'].push(XLSX.utils.decode_range(`C${currentIceTypeRow + 1}:C${currentIceTypeRow + validTypeOrders.length}`));
-                    ws['!merges'].push(XLSX.utils.decode_range(`D${currentIceTypeRow + 1}:D${currentIceTypeRow + validTypeOrders.length}`));
-                }
-                currentIceTypeRow += validTypeOrders.length;
+                numRowsForCustomer += orders.filter(order => order.quantity !== 0 || order.price !== 0).length;
             });
-        }
-        currentRow += numRowsForCustomer;
-    });
 
-    // Merge for the "Total" row
-    ws['!merges'].push(XLSX.utils.decode_range(`A${currentRow + 1}:C${currentRow + 1}`));
+            if (numRowsForCustomer === 0) {
+                numRowsForCustomer = 1; // For customers with no specific orders
+            }
 
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Customer Report');
+            if (numRowsForCustomer > 1) {
+                ws['!merges'].push(XLSX.utils.decode_range(`A${currentRow + 1}:A${currentRow + numRowsForCustomer}`));
+                ws['!merges'].push(XLSX.utils.decode_range(`B${currentRow + 1}:B${currentRow + numRowsForCustomer}`));
+                ws['!merges'].push(XLSX.utils.decode_range(`H${currentRow + 1}:H${currentRow + numRowsForCustomer}`));
+                ws['!merges'].push(XLSX.utils.decode_range(`I${currentRow + 1}:I${currentRow + numRowsForCustomer}`));
+                ws['!merges'].push(XLSX.utils.decode_range(`J${currentRow + 1}:J${currentRow + numRowsForCustomer}`));
+                ws['!merges'].push(XLSX.utils.decode_range(`K${currentRow + 1}:K${currentRow + numRowsForCustomer}`));
+                ws['!merges'].push(XLSX.utils.decode_range(`L${currentRow + 1}:L${currentRow + numRowsForCustomer}`));
+                ws['!merges'].push(XLSX.utils.decode_range(`M${currentRow + 1}:M${currentRow + numRowsForCustomer}`));
 
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+                let currentIceTypeRow = currentRow;
+                customerIceTypes.forEach(typeKey => {
+                    const orders = customer.iceOrders?.[typeKey] || [];
+                    const validTypeOrders = orders.filter(order => order.quantity !== 0 || order.price !== 0);
+                    if (validTypeOrders.length > 1) {
+                        ws['!merges'].push(XLSX.utils.decode_range(`C${currentIceTypeRow + 1}:C${currentIceTypeRow + validTypeOrders.length}`));
+                        ws['!merges'].push(XLSX.utils.decode_range(`D${currentIceTypeRow + 1}:D${currentIceTypeRow + validTypeOrders.length}`));
+                    }
+                    currentIceTypeRow += validTypeOrders.length;
+                });
+            }
+            currentRow += numRowsForCustomer;
+        });
 
-    const now = new Date();
-    const dateTimeString = now.toISOString().replace(/[:.]/g, '-').replace('T', '_').slice(0, 19);
-    const fileName = `Customer_Report_${dateTimeString}.xlsx`;
+        // Merge for the "Total" row
+        ws['!merges'].push(XLSX.utils.decode_range(`A${currentRow + 1}:C${currentRow + 1}`));
 
-    saveAs(data, fileName);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Customer Report');
+
+        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+        const data = new Blob([excelBuffer], { type: 'application/octet-stream' });
+
+        const now = new Date();
+        const dateTimeString = now.toISOString().replace(/[:.]/g, '-').replace('T', '_').slice(0, 19);
+        const fileName = `Customer_Report_${dateTimeString}.xlsx`;
+
+        saveAs(data, fileName);
 };
 
 
@@ -761,8 +847,8 @@ const handleExportToExcel = () => {
                             >
                                 <td className="border px-4 py-2 text-center" colSpan={3}>សរុប</td>
                                 <td className="border px-4 py-2" style={{ backgroundColor: columnBgColors.totalIce }}>{tableTotals.totalIceQuantity}</td>
-                                <td className="border px-4 py-2" style={{ backgroundColor: columnBgColors.quantity }}></td>
-                                <td className="border px-4 py-2" style={{ backgroundColor: columnBgColors.price }}></td>
+                                <td className="border px-4 py-2" style={{ backgroundColor: columnBgColors.quantity }}>{tableTotals.totalIceQuantity}</td>
+                                <td className="border px-4 py-2" style={{ backgroundColor: columnBgColors.price }}>{tableTotals.totalRevenue}</td>
                                 <td className="border px-4 py-2" style={{ backgroundColor: columnBgColors.total }}>{tableTotals.totalRevenue}</td>
                                 <td className="border px-4 py-2">{tableTotals.totalPrevDebt}</td>
                                 <td className="border px-4 py-2">{tableTotals.totalNewDebt}</td>

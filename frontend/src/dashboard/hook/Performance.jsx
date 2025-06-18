@@ -1,4 +1,3 @@
-// src/components/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Bar } from 'react-chartjs-2';
@@ -23,18 +22,21 @@ const Dashboard = () => {
   const [totalsList, setTotalsList] = useState([]);
   const [chartPeriod, setChartPeriod] = useState('Day');
   const [reportList, setReportList] = useState([]);
-  const [loading, setLoading] = useState(true); // Add loading state
+  const [loading, setLoading] = useState(true);
+  const [selectedReportDate, setSelectedReportDate] = useState(null);
 
   // Fetch all totals data
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      axios.get('https://dl-api-v-01.vercel.app/api/table-totals'),
-      axios.get('https://dl-api-v-01.vercel.app/api/reports')
+      axios.get('http://localhost:5000/api/table-totals'),
+      axios.get('http://localhost:5000/api/reports')
     ])
       .then(([totalsRes, reportsRes]) => {
+        // Filter out reports with empty customersData
+        const validReports = reportsRes.data.filter(r => r.customersData && r.customersData.length > 0);
         setTotalsList(totalsRes.data);
-        setReportList(reportsRes.data);
+        setReportList(validReports);
       })
       .catch((error) => {
         console.error('Error fetching data:', error);
@@ -80,14 +82,13 @@ const Dashboard = () => {
         return d.getFullYear() === now.getFullYear();
       });
     }
-    // Return the latest entry for the period, or null if none
     if (!filtered.length) return null;
     return filtered.reduce((a, b) => new Date(a.date) > new Date(b.date) ? a : b);
   };
 
   const totals = getFilteredTotals();
 
-  // Helper to format date (only date, no time)
+  // Helper to format date
   const getFormattedDate = (dateStr) => {
     if (!dateStr) return null;
     const dateObj = new Date(dateStr);
@@ -97,7 +98,7 @@ const Dashboard = () => {
     return dateStr;
   };
 
-  // Helper to summarize ice orders for display
+  // Helper to summarize ice orders
   const summarizeIceOrders = (iceOrders) => {
     if (!iceOrders) return '';
     const types = Object.keys(iceOrders);
@@ -110,7 +111,7 @@ const Dashboard = () => {
       .join(', ');
   };
 
-  // --- Bar Chart for all data from API ---
+  // Bar Chart data
   let barChartData = null;
   let barChartOptions = null;
 
@@ -134,7 +135,6 @@ const Dashboard = () => {
 
   if (totalsList.length > 0) {
     if (chartPeriod === 'Day') {
-      // Show all data from API for Day
       const sortedTotals = [...totalsList].sort((a, b) => new Date(a.date) - new Date(b.date));
       const labels = sortedTotals.map(item =>
         new Date(item.date).toLocaleDateString('km-KH', { timeZone: 'Asia/Phnom_Penh' })
@@ -260,6 +260,79 @@ const Dashboard = () => {
     }
   }
 
+  // Get unique sorted report dates for reports with non-empty customersData
+  const reportDates = reportList
+    .filter(r => r.customersData && r.customersData.length > 0)
+    .map(r => r.date)
+    .filter(Boolean)
+    .sort((a, b) => new Date(b) - new Date(a));
+
+  // Find the report for the selected date
+  const selectedReport = reportList.find(r => r.date === selectedReportDate);
+
+  useEffect(() => {
+    if (reportDates.length && !selectedReportDate) {
+      setSelectedReportDate(reportDates[0]);
+    } else if (!reportDates.length) {
+      setSelectedReportDate(null);
+    }
+  }, [reportDates.length]);
+
+  // Handle customer deletion
+  const handleDeleteCustomer = async (reportId, customerId) => {
+    if (window.confirm('Are you sure you want to delete this customer info?')) {
+      try {
+        setLoading(true);
+        // Delete customer from report
+        await axios.delete(`http://localhost:5000/api/reports/${reportId}/customer/${customerId}`);
+        // Update reportList in state
+        let updatedReportList = reportList.map(r => {
+          if (r._id === reportId) {
+            return {
+              ...r,
+              customersData: r.customersData.filter(c => c._id !== customerId)
+            };
+          }
+          return r;
+        });
+        // Remove report if no customers remain
+        const updatedReport = updatedReportList.find(r => r._id === reportId);
+        if (updatedReport && updatedReport.customersData.length === 0) {
+          await axios.delete(`http://localhost:5000/api/reports/${reportId}`);
+          updatedReportList = updatedReportList.filter(r => r._id !== reportId);
+          // Select the next available report date or null
+          const newReportDates = updatedReportList
+            .filter(r => r.customersData && r.customersData.length > 0)
+            .map(r => r.date)
+            .sort((a, b) => new Date(b) - new Date(a));
+          setSelectedReportDate(newReportDates[0] || null);
+        }
+        setReportList(updatedReportList);
+      } catch (error) {
+        console.error('Error deleting customer:', error);
+        alert('Failed to delete customer. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  // Handle delete user from table-totals
+  const handleDeleteTableTotalsUser = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user info?')) {
+      try {
+        setLoading(true);
+        await axios.delete(`http://localhost:5000/api/table-totals/${userId}`);
+        setTotalsList(prev => prev.filter(user => user._id !== userId));
+      } catch (error) {
+        console.error('Error deleting user:', error);
+        alert('Failed to delete user. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
@@ -305,7 +378,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Bar Chart for Day, Week, Month, Year for all KPIs */}
+        {/* Bar Chart */}
         {!loading && barChartData && (
           <div className="bg-white p-6 rounded-lg shadow-md mb-8">
             <Bar data={barChartData} options={barChartOptions} />
@@ -351,42 +424,126 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-          ) : reportList.length === 0 ? (
-            <div className="text-gray-500">No report data.</div>
+          ) : reportList.length === 0 || reportDates.length === 0 ? (
+            <div className="text-gray-500">No report data available.</div>
           ) : (
-            reportList.map(report => (
-              <div key={report._id} className="mb-6 bg-white rounded-lg shadow-md p-4">
-                <div className="font-medium text-gray-700 mb-2">
-                  Date: {getFormattedDate(report.date)}
-                </div>
-                {/* Added custom header text */}
-                <div className="mb-2 font-semibold text-black">
-                  Customer&nbsp;&nbsp;New Debt&nbsp;&nbsp;Payment&nbsp;&nbsp;Total Debt
-                </div>
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Customer</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">New Debt</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Payment</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Total Debt</th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {report.customersData.map(customer => (
-                        <tr key={customer._id}>
-                          <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{customer.customerName}</td>
-                          <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{customer.newDebt}</td>
-                          <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{customer.payment}</td>
-                          <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{customer.totalDebt}</td>
+            <>
+              {/* Date selector */}
+              <div className="mb-4 flex items-center space-x-2">
+                <label className="font-medium text-black">Select Date:</label>
+                <select
+                  className="border rounded px-2 py-1 text-black bg-white"
+                  value={selectedReportDate || ''}
+                  onChange={e => setSelectedReportDate(e.target.value)}
+                >
+                  {reportDates.map(date => (
+                    <option key={date} value={date}>
+                      {getFormattedDate(date)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              {/* Show selected report */}
+              {selectedReport && selectedReport.customersData.length > 0 ? (
+                <div className="mb-6 bg-white rounded-lg shadow-md p-4">
+                  <div className="font-medium text-gray-700 mb-2">
+                    Date: {getFormattedDate(selectedReport.date)}
+                  </div>
+                  <div className="mb-2 font-semibold text-black">
+                    Customer  New Debt  Payment  Total Debt
+                  </div>
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Customer</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">New Debt</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Payment</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Total Debt</th>
+                          <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Action</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-200">
+                        {selectedReport.customersData.map(customer => (
+                          <tr key={customer._id}>
+                            <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{customer.customerName}</td>
+                            <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{customer.newDebt}</td>
+                            <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{customer.payment}</td>
+                            <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{customer.totalDebt}</td>
+                            <td className="px-6 py-3 whitespace-nowrap text-sm">
+                              <button
+                                className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                                onClick={() => handleDeleteCustomer(selectedReport._id, customer._id)}
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-gray-500">No customers in this report.</div>
+              )}
+            </>
+          )}
+        </div>
+
+        {/* Table-Totals User List Section */}
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold mb-2 text-gray-900">All Table Totals</h2>
+          {loading ? (
+            <div className="container">
+              <div className="row">
+                <div className="col-md-12 d-flex justify-content-center align-items-center">
+                  <div className="spinner-border text-dark" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
                 </div>
               </div>
-            ))
+            </div>
+          ) : totalsList.length === 0 ? (
+            <div className="text-gray-500">No table-totals data available.</div>
+          ) : (
+            <div className="overflow-x-auto bg-white rounded-lg shadow-md p-4 mb-6">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Date</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Total Quantity</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Prev Debt</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">New Debt</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Payment</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Total Debt</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Net Income</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-black">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {totalsList.map(user => (
+                    <tr key={user._id}>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{getFormattedDate(user.date)}</td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{user.totalQuantity}</td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{user.totalPrevDebt}</td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{user.totalNewDebt}</td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{user.totalPayment}</td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{user.totalTotalDebt}</td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm text-gray-700">{user.totalNetIncome}</td>
+                      <td className="px-6 py-3 whitespace-nowrap text-sm">
+                        <button
+                          className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                          onClick={() => handleDeleteTableTotalsUser(user._id)}
+                        >
+                          Delete
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

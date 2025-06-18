@@ -102,8 +102,8 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
     }
 
     const url = initialData
-      ? `https://dl-api-v-01.vercel.app/api/orders/${initialData._id}`
-      : "https://dl-api-v-01.vercel.app/api/orders"
+      ? `http://localhost:5000/api/orders/${initialData._id}`
+      : "http://localhost:5000/api/api/orders"
     const method = initialData ? "PUT" : "POST"
 
     try {
@@ -299,18 +299,18 @@ const IceOrderForm = ({ initialData = null, onClose, onUpdateSuccess }) => {
                 <div className="summary-grid">
                   <div className="summary-item debt-summary">
                     <span className="summary-label">Total Debt:</span>
-                    <span className="summary-value debt-value">${currentDebtTotal.toFixed(2)}</span>
+                    <span className="summary-value debt-value">{currentDebtTotal.toFixed(2)}</span>
                   </div>
                   <div className="summary-item payment-summary">
                     <span className="summary-label">Total Payment:</span>
-                    <span className="summary-value payment-value">${currentPaymentTotal.toFixed(2)}</span>
+                    <span className="summary-value payment-value">{currentPaymentTotal.toFixed(2)}</span>
                   </div>
                   <div
                     className={`summary-item balance-summary ${netBalance >= 0 ? "debt-balance" : "credit-balance"}`}
                   >
                     <span className="summary-label">Net Balance:</span>
                     <span className="summary-value balance-value">
-                      ${Math.abs(netBalance).toFixed(2)} {netBalance >= 0 ? "(Owed)" : "(Credit)"}
+                      {Math.abs(netBalance).toFixed(2)} {netBalance >= 0 ? "(Owed)" : "(Credit)"}
                     </span>
                   </div>
                 </div>

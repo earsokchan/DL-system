@@ -152,6 +152,7 @@
   background: #ffffff;
   font-family: inherit;
   font-weight: 500;
+  color: #000000; /* Changed from default to black */
 }
 
 .form-input:focus {
