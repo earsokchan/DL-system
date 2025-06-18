@@ -29,8 +29,8 @@ const Dashboard = () => {
   useEffect(() => {
     setLoading(true);
     Promise.all([
-      axios.get('http://localhost:5000/api/table-totals'),
-      axios.get('http://localhost:5000/api/reports')
+      axios.get('https://dl-api-v-01.vercel.app/api/table-totals'),
+      axios.get('https://dl-api-v-01.vercel.app/api/reports')
     ])
       .then(([totalsRes, reportsRes]) => {
         // Filter out reports with empty customersData
@@ -284,7 +284,7 @@ const Dashboard = () => {
       try {
         setLoading(true);
         // Delete customer from report
-        await axios.delete(`http://localhost:5000/api/reports/${reportId}/customer/${customerId}`);
+        await axios.delete(`https://dl-api-v-01.vercel.app/api/reports/${reportId}/customer/${customerId}`);
         // Update reportList in state
         let updatedReportList = reportList.map(r => {
           if (r._id === reportId) {
@@ -298,7 +298,7 @@ const Dashboard = () => {
         // Remove report if no customers remain
         const updatedReport = updatedReportList.find(r => r._id === reportId);
         if (updatedReport && updatedReport.customersData.length === 0) {
-          await axios.delete(`http://localhost:5000/api/reports/${reportId}`);
+          await axios.delete(`https://dl-api-v-01.vercel.app/api/reports/${reportId}`);
           updatedReportList = updatedReportList.filter(r => r._id !== reportId);
           // Select the next available report date or null
           const newReportDates = updatedReportList
@@ -322,7 +322,7 @@ const Dashboard = () => {
     if (window.confirm('Are you sure you want to delete this user info?')) {
       try {
         setLoading(true);
-        await axios.delete(`http://localhost:5000/api/table-totals/${userId}`);
+        await axios.delete(`https://dl-api-v-01.vercel.app/api/table-totals/${userId}`);
         setTotalsList(prev => prev.filter(user => user._id !== userId));
       } catch (error) {
         console.error('Error deleting user:', error);
